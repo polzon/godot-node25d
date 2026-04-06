@@ -65,7 +65,7 @@ func node25d_process() -> void:
 
 	set_spatial_position(_spatial_node.position)
 
-	var flat_pos = _spatial_position.x * _basis_x
+	var flat_pos: Vector2 = _spatial_position.x * _basis_x
 	flat_pos += _spatial_position.y * _basis_y
 	flat_pos += _spatial_position.z * _basis_z
 

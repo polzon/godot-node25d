@@ -10,7 +10,8 @@ var main_panel_instance: VBoxContainer
 
 func _enter_tree() -> void:
 	main_panel_instance = MainPanel.instantiate()
-	main_panel_instance.get_child(1).editor_interface = get_editor_interface()
+	var viewport_25d := main_panel_instance.get_child(1) as Viewport25D
+	viewport_25d.editor_interface = get_editor_interface()
 
 	# Add the main panel to the editor's main viewport.
 	EditorInterface.get_editor_main_screen().add_child(main_panel_instance)

@@ -1,4 +1,5 @@
 @tool
+class_name Viewport25D
 extends Control
 
 var zoom_level: int = 0
@@ -7,7 +8,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface  # Set in node25d_plugin.gd
+var editor_interface: EditorInterface # Set in node25d_plugin.gd
 var moving = false
 
 @onready var viewport_2d = $Viewport2D
@@ -22,7 +23,7 @@ var gizmo_25d_scene = preload("res://addons/node25d/main_screen/gizmo_25d.tscn")
 
 func _ready() -> void:
 	# Give Godot a chance to fully load the scene. Should take two frames.
-	for i in 2:
+	for i: int in 2:
 		await get_tree().process_frame
 
 	var edited_scene_root = get_tree().edited_scene_root
@@ -31,15 +32,18 @@ func _ready() -> void:
 		editor_interface.set_plugin_enabled("node25d", false)
 		editor_interface.set_plugin_enabled("node25d", true)
 		return
-	# Alright, we're loaded up. Now check if we have a valid world and assign it.
+
+	# Alright, we're loaded up. Now check if we have a valid
+	# world and assign it.
 	var world_2d = edited_scene_root.get_viewport().world_2d
 	if world_2d == get_viewport().world_2d:
-		return  # This is the MainScreen25D scene opened in the editor!
+		return # This is the MainScreen25D scene opened in the editor!
 	viewport_2d.world_2d = world_2d
 
 
 func _process(_delta: float) -> void:
-	if not editor_interface:  # Something's not right... bail!
+	if not editor_interface:
+		# Something's not right... bail!
 		return
 
 	# View mode polling.
@@ -84,21 +88,23 @@ func _process(_delta: float) -> void:
 				contains = true
 		if not contains:
 			gizmo.queue_free()
+
 	# Add new gizmos.
 	for selected in selection:
 		if selected is Node25D:
 			_ensure_node25d_has_gizmo(selected, gizmos)
+
 	# Update gizmo zoom.
 	for gizmo in gizmos:
 		gizmo.set_zoom(zoom)
 
 
 func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Node]) -> void:
-	var new = true
-	for gizmo in gizmos:
+	var new: bool = true
+	for gizmo: Node in gizmos:
 		if node == gizmo.node_25d:
 			return
-	var gizmo = gizmo_25d_scene.instantiate()
+	var gizmo := gizmo_25d_scene.instantiate() as Node2D
 	viewport_overlay.add_child(gizmo)
 	gizmo.setup(node)
 
@@ -144,10 +150,10 @@ func _recursive_change_view_mode(current_node: Node) -> void:
 	if not current_node:
 		return
 
-	if current_node.has_method(&"set_view_mode"):
-		current_node.set_view_mode(view_mode_index)
+	if current_node is Node25D:
+		(current_node as Node25D).set_view_mode(view_mode_index)
 
-	for child in current_node.get_children():
+	for child: Node in current_node.get_children():
 		_recursive_change_view_mode(child)
 
 
