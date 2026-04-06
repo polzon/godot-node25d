@@ -2,6 +2,9 @@
 @icon("res://addons/node25d/icons/node_25d.svg")
 class_name Node25D
 extends Node2D
+## A [Node2D] that converts a [Node3D] child position into 2D using
+## a 2.5D basis transform.
+##
 ## Converts a 3D child position into 2D using a 2.5D basis transform.
 ## Requires the first child to be a Node3D for spatial math; add a Sprite2D
 ## or other Node2D child to render the object.
