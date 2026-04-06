@@ -1,12 +1,23 @@
 @tool
 extends Sprite2D
 
-@onready var _forty_five: Texture2D = preload("res://assets/shadow/textures/forty_five.png")
-@onready var _isometric: Texture2D = preload("res://assets/shadow/textures/isometric.png")
-@onready var _top_down: Texture2D = preload("res://assets/shadow/textures/top_down.png")
-@onready var _front_side: Texture2D = preload("res://assets/shadow/textures/front_side.png")
-@onready var _oblique_y: Texture2D = preload("res://assets/shadow/textures/oblique_y.png")
-@onready var _oblique_z: Texture2D = preload("res://assets/shadow/textures/oblique_z.png")
+@onready var _forty_five: Texture2D = preload(
+	"res://assets/shadow/textures/forty_five.png"
+)
+@onready var _isometric: Texture2D = preload(
+	"res://assets/shadow/textures/isometric.png"
+)
+@onready
+var _top_down: Texture2D = preload("res://assets/shadow/textures/top_down.png")
+@onready var _front_side: Texture2D = preload(
+	"res://assets/shadow/textures/front_side.png"
+)
+@onready var _oblique_y: Texture2D = preload(
+	"res://assets/shadow/textures/oblique_y.png"
+)
+@onready var _oblique_z: Texture2D = preload(
+	"res://assets/shadow/textures/oblique_z.png"
+)
 
 
 func _process(_delta: float) -> void:

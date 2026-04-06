@@ -1,7 +1,7 @@
-# Handles Player-specific behavior like moving. We calculate such things with CharacterBody3D.
-class_name PlayerMath25D  # No icon necessary
+# Handles Player-specific behavior like moving. We calculate such things
+# with CharacterBody3D.
+class_name PlayerMath25D # No icon necessary
 extends CharacterBody3D
-
 
 var vertical_speed: float = 0.0
 var isometric_controls: bool = true
@@ -33,13 +33,22 @@ func _horizontal_movement(_delta: float) -> void:
 	var local_x := Vector3.RIGHT
 	var local_z := Vector3.BACK
 
-	if isometric_controls and is_equal_approx(Node25D.SCALE * 0.86602540378, _parent_node25d.get_basis()[0].x):
+	if (
+		isometric_controls
+		and is_equal_approx(
+			Node25D.SCALE * 0.86602540378, _parent_node25d.get_basis()[0].x
+		)
+	):
 		local_x = Vector3(0.70710678118, 0, -0.70710678118)
 		local_z = Vector3(0.70710678118, 0, 0.70710678118)
 
 	# Gather player input and add directional movement to a Vector3 variable.
-	var movement_vec2 := Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
-	var move_dir: Vector3 = local_x * movement_vec2.x + local_z * movement_vec2.y
+	var movement_vec2 := Input.get_vector(
+		&"move_left", &"move_right", &"move_forward", &"move_back"
+	)
+	var move_dir: Vector3 = (
+		local_x * movement_vec2.x + local_z * movement_vec2.y
+	)
 
 	velocity = move_dir * 10
 	if Input.is_action_pressed(&"movement_modifier"):
