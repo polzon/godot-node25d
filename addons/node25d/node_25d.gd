@@ -2,14 +2,16 @@
 @icon("res://addons/node25d/icons/node_25d.svg")
 class_name Node25D
 extends Node2D
-## This node converts a 3D position to 2D using a 2.5D transformation matrix.
-## The transformation of its 2D form is controlled by its 3D child.
+## Converts a 3D child position into 2D using a 2.5D basis transform.
+## Requires the first child to be a Node3D for spatial math; add a Sprite2D
+## or other Node2D child to render the object.
 
-## SCALE is the number of 2D units in one 3D unit. Ideally, but not
-## necessarily, an integer.
+## The number of 2D units in one 3D unit.
+## Ideally, but not necessarily, an integer.
 const SCALE: int = 32
 ## Equal axis for 45 degree angles, used in some of the view modes.
 const INV_SQRT_2: float = 0.70710678118
+## Cosine of 30 degrees, used for the isometric view mode basis.
 const HALF_SQRT_3: float = 0.86602540378
 
 # Exported spatial position for editor usage.
@@ -45,9 +47,9 @@ func _process(_delta: float) -> void:
 
 # Call this method in _ready, or before node25d_process is first ran.
 func node25d_ready() -> void:
-	_spatial_node = get_child(0) as Node3D
-	# Changing the values here will change the
-	# default for all Node25D instances.
+	_update_spatial_node()
+	child_order_changed.connect(_update_spatial_node)
+
 	_basis_x = SCALE * Vector2(1, 0)
 	_basis_y = SCALE * Vector2(0, -INV_SQRT_2)
 	_basis_z = SCALE * Vector2(0, INV_SQRT_2)
@@ -57,7 +59,8 @@ func node25d_ready() -> void:
 func node25d_process() -> void:
 	if _spatial_node == null:
 		return
-	_spatial_position = _spatial_node.position
+
+	set_spatial_position(_spatial_node.position)
 
 	var flat_pos = _spatial_position.x * _basis_x
 	flat_pos += _spatial_position.y * _basis_y
@@ -71,8 +74,6 @@ func get_basis() -> Array[Vector2]:
 
 
 func get_spatial_position() -> Vector3:
-	if not _spatial_node:
-		_spatial_node = get_child(0) as Node3D
 	return _spatial_node.position if _spatial_node else Vector3.ZERO
 
 
@@ -80,14 +81,13 @@ func set_spatial_position(value: Vector3) -> void:
 	_spatial_position = value
 	if _spatial_node:
 		_spatial_node.position = value
-	elif get_child_count() > 0:
-		_spatial_node = get_child(0) as Node3D
 
 
 ## Change the basis based on the view_mode_index argument.
 ## This can be changed or removed in actual games where you only need
 ## one view mode.
 func set_view_mode(view_mode_index) -> void:
+	# TODO: This can be moved out of this class.
 	match view_mode_index:
 		0: # 45 Degrees
 			_basis_x = SCALE * Vector2(1, 0)
@@ -122,6 +122,10 @@ func _get_configuration_warnings() -> PackedStringArray:
 	if get_child(0) is not Node3D:
 		warnings.append("The first child of a Node25D must be a Node3D.")
 	return warnings
+
+
+func _update_spatial_node() -> void:
+	_spatial_node = get_child(0) as Node3D
 
 
 # Used by YSort25D
