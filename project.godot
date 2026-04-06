@@ -34,6 +34,12 @@ window/stretch/aspect="expand"
 
 enabled=PackedStringArray("res://addons/node25d/plugin.cfg")
 
+[file_customization]
+
+folder_colors={
+"res://addons/node25d/": "purple"
+}
+
 [input]
 
 move_right={
