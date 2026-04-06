@@ -21,7 +21,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
-		return # Don't run this in the editor.
+		return  # Don't run this in the editor.
 
 	_sprite_basis()
 	# Always run to get direction, but don't always use return bool.
@@ -54,22 +54,22 @@ func _process(delta: float) -> void:
 
 func set_view_mode(view_mode_index: int) -> void:
 	match view_mode_index:
-		0: # 45 Degrees
+		0:  # 45 Degrees
 			transform.x = Vector2(1, 0)
 			transform.y = Vector2(0, 0.75)
-		1: # Isometric
+		1:  # Isometric
 			transform.x = Vector2(1, 0)
 			transform.y = Vector2(0, 1)
-		2: # Top Down
+		2:  # Top Down
 			transform.x = Vector2(1, 0)
 			transform.y = Vector2(0, 0.5)
-		3: # Front Side
+		3:  # Front Side
 			transform.x = Vector2(1, 0)
 			transform.y = Vector2(0, 1)
-		4: # Oblique Y
+		4:  # Oblique Y
 			transform.x = Vector2(1, 0)
 			transform.y = Vector2(0.75, 0.75)
-		5: # Oblique Z
+		5:  # Oblique Z
 			transform.x = Vector2(1, 0.25)
 			transform.y = Vector2(0, 1)
 
@@ -130,7 +130,7 @@ func _check_movement() -> bool:
 	# Set the direction based on which inputs were pressed.
 	if x == 0:
 		if z == 0:
-			return false # No movement.
+			return false  # No movement.
 		if z > 0:
 			_direction = 0
 		else:
@@ -156,4 +156,4 @@ func _check_movement() -> bool:
 			_direction = 3
 			flip_h = false
 
-	return true # There is movement.
+	return true  # There is movement.

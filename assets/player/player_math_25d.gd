@@ -1,6 +1,6 @@
 # Handles Player-specific behavior like moving. We calculate such things
 # with CharacterBody3D.
-class_name PlayerMath25D # No icon necessary
+class_name PlayerMath25D  # No icon necessary
 extends CharacterBody3D
 
 var vertical_speed: float = 0.0
@@ -62,7 +62,7 @@ func _vertical_movement(delta: float) -> void:
 	if Input.is_action_just_pressed(&"jump"):
 		vertical_speed = 60
 
-	vertical_speed -= delta * 240 # Gravity
+	vertical_speed -= delta * 240  # Gravity
 	var k := move_and_collide(Vector3.UP * vertical_speed * delta)
 
 	if k != null:
