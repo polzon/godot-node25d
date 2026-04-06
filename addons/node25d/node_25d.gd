@@ -115,7 +115,16 @@ func set_view_mode(view_mode_index) -> void:
 			_basis_z = SCALE * Vector2(-INV_SQRT_2, INV_SQRT_2)
 
 
-## Used by YSort25D
+func _get_configuration_warnings() -> PackedStringArray:
+	if get_child_count() == 0:
+		return ["A Node25D must have a child Node3D to function."]
+	var warnings: PackedStringArray = []
+	if get_child(0) is not Node3D:
+		warnings.append("The first child of a Node25D must be a Node3D.")
+	return warnings
+
+
+# Used by YSort25D
 static func y_sort(a: Node25D, b: Node25D) -> bool:
 	return a._spatial_position.y < b._spatial_position.y
 
