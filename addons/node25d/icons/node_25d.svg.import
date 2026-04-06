@@ -16,7 +16,7 @@ dest_files=["res://.godot/imported/node_25d.svg-1ea74793e2344a74bb94a042a3118594
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -16,7 +16,7 @@ dest_files=["res://.godot/imported/y_sort_25d.svg-b312d7138ee9acc637a19ed02d7655
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
