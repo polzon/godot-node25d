@@ -8,7 +8,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface # Set in node25d_plugin.gd
+var editor_interface: EditorInterface  # Set in node25d_plugin.gd
 var moving = false
 
 @onready var viewport_2d = $Viewport2D
@@ -37,7 +37,7 @@ func _ready() -> void:
 	# world and assign it.
 	var world_2d = edited_scene_root.get_viewport().world_2d
 	if world_2d == get_viewport().world_2d:
-		return # This is the MainScreen25D scene opened in the editor!
+		return  # This is the MainScreen25D scene opened in the editor!
 	viewport_2d.world_2d = world_2d
 
 
