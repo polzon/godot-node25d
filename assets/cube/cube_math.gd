@@ -13,21 +13,19 @@ var _cube_math_spatials: Array[Node3D] = []
 func _ready() -> void:
 	_parent = get_parent()
 
-	for i in 27:
-		@warning_ignore("integer_division")
-		var a: int = (i / 9) - 1
-		@warning_ignore("integer_division")
-		var b: int = (i / 3) % 3 - 1
-		var c: int = (i % 3) - 1
+	for point: int in range(27):
+		var a: int = int(point / 9.0) - 1
+		var b: int = int(point / 3.0) % 3 - 1
+		var c: int = point % 3 - 1
 		var spatial_position: Vector3 = (
 			5 * (a * Vector3.RIGHT + b * Vector3.UP + c * Vector3.BACK)
 		)
 		_cube_math_spatials.append(Node3D.new())
-		_cube_math_spatials[i].position = spatial_position
-		_cube_math_spatials[i].name = (
-			"CubeMath #" + str(i) + ", " + str(a) + " " + str(b) + " " + str(c)
+		_cube_math_spatials[point].position = spatial_position
+		_cube_math_spatials[point].name = (
+			"CubeMath #%s, %s %s %s" % [point, a, b, c]
 		)
-		add_child(_cube_math_spatials[i])
+		add_child(_cube_math_spatials[point])
 
 
 func _process(delta: float) -> void:
@@ -52,17 +50,18 @@ func _process(delta: float) -> void:
 					))
 				)
 			)
-		for i in 27:
-			_cube_points_math[i].global_transform = (
-				_cube_math_spatials[i].global_transform
+		for point: int in range(27):
+			_cube_points_math[point].global_transform = (
+				_cube_math_spatials[point].global_transform
 			)
+
+	# This code block will be run only once. It's not in `_ready()` because
+	# the parent isn't set up there.
 	else:
-		# This code block will be run only once. It's not in `_ready()` because
-		# the parent isn't set up there.
-		for i in 27:
+		for point: int in range(27):
 			var my_cube_point_scene := _cube_point_scene.duplicate(true)
 			var cube_point: Node = my_cube_point_scene.instantiate()
-			cube_point.name = "CubePoint #" + str(i)
+			cube_point.name = "CubePoint #" + str(point)
 			_cube_points_math.append(cube_point.get_child(0))
 			_parent.add_child(cube_point)
 		_is_parent_ready = true

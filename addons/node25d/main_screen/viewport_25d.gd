@@ -34,11 +34,10 @@ func _ready() -> void:
 		EditorInterface.set_plugin_enabled("node25d", true)
 		return
 
-	# Alright, we're loaded up. Now check if we have a valid
-	# world and assign it.
-	var world_2d: World2D = edited_scene_root.get_viewport().world_2d
+	var world_2d := EditorInterface.get_editor_viewport_2d().world_2d
 	if world_2d == get_viewport().world_2d:
-		return  # This is the MainScreen25D scene opened in the editor!
+		# This is the MainScreen25D scene opened in the editor!
+		return
 	viewport_2d.world_2d = world_2d
 
 
@@ -82,7 +81,7 @@ func _process(_delta: float) -> void:
 	# Delete unused gizmos.
 	var selection := EditorInterface.get_selection().get_selected_nodes()
 	var gizmos: Array[Gizmo25D] = []
-	for node in viewport_overlay.get_children():
+	for node: Node in viewport_overlay.get_children():
 		if node is Gizmo25D:
 			var gizmo := node as Gizmo25D
 			var contains: bool = false
@@ -123,28 +122,34 @@ func _gui_input(input_event: InputEvent) -> void:
 			if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
 				zoom_level += 1
 				accept_event()
+
 			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				zoom_level -= 1
 				accept_event()
+
 			elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
 				is_panning = true
 				pan_center = (
 					viewport_center - mouse_event.position / _get_zoom_amount()
 				)
 				accept_event()
+
 			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 				var overlay_children := viewport_overlay.get_children()
 				for overlay_child: Variant in overlay_children:
 					overlay_child.wants_to_move = true
 				accept_event()
+
 		elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
 			is_panning = false
 			accept_event()
+
 		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 			var overlay_children := viewport_overlay.get_children()
 			for overlay_child: Variant in overlay_children:
 				overlay_child.wants_to_move = false
 			accept_event()
+
 	elif input_event is InputEventMouseMotion:
 		var motion_event := input_event as InputEventMouseMotion
 		if is_panning:
