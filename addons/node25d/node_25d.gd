@@ -89,7 +89,7 @@ func set_spatial_position(value: Vector3) -> void:
 ## Change the basis based on the view_mode_index argument.
 ## This can be changed or removed in actual games where you only need
 ## one view mode.
-func set_view_mode(view_mode_index) -> void:
+func set_view_mode(view_mode_index: int) -> void:
 	# TODO: This can be moved out of this class.
 	match view_mode_index:
 		0:  # 45 Degrees
@@ -121,14 +121,17 @@ func set_view_mode(view_mode_index) -> void:
 func _get_configuration_warnings() -> PackedStringArray:
 	if get_child_count() == 0:
 		return ["A Node25D must have a child Node3D to function."]
+
 	var warnings: PackedStringArray = []
 	if get_child(0) is not Node3D:
 		warnings.append("The first child of a Node25D must be a Node3D.")
+
 	return warnings
 
 
 func _update_spatial_node() -> void:
-	_spatial_node = get_child(0) as Node3D
+	if get_child_count() > 0:
+		_spatial_node = get_child(0) as Node3D
 
 
 # Used by YSort25D
@@ -138,9 +141,9 @@ static func y_sort(a: Node25D, b: Node25D) -> bool:
 
 static func y_sort_slight_xz(a: Node25D, b: Node25D) -> bool:
 	var a_xz_spatial := a._spatial_position.x + a._spatial_position.z
-	var a_index = a._spatial_position.y + 0.001 * a_xz_spatial
+	var a_index := a._spatial_position.y + 0.001 * a_xz_spatial
 
 	var b_xz_spatial := b._spatial_position.x + b._spatial_position.z
-	var b_index = b._spatial_position.y + 0.001 * b_xz_spatial
+	var b_index := b._spatial_position.y + 0.001 * b_xz_spatial
 
 	return a_index < b_index

@@ -9,16 +9,17 @@ var viewport_center: Vector2
 var view_mode_index: int = 0
 
 var editor_interface: EditorInterface  # Set in node25d_plugin.gd
-var moving = false
+var moving: bool = false
 
-@onready var viewport_2d = $Viewport2D
-@onready var viewport_overlay = $ViewportOverlay
+@onready var viewport_2d: SubViewport = $Viewport2D
+@onready var viewport_overlay: SubViewport = $ViewportOverlay
 @onready var view_mode_button_group: ButtonGroup = (
 	$"../TopBar/ViewModeButtons/45Degree".button_group
 )
 @onready var zoom_label: Label = $"../TopBar/Zoom/ZoomPercent"
-@onready
-var gizmo_25d_scene = preload("res://addons/node25d/main_screen/gizmo_25d.tscn")
+@onready var gizmo_25d_scene: PackedScene = preload(
+	"res://addons/node25d/main_screen/gizmo_25d.tscn"
+)
 
 
 func _ready() -> void:
@@ -26,16 +27,16 @@ func _ready() -> void:
 	for i: int in 2:
 		await get_tree().process_frame
 
-	var edited_scene_root = get_tree().edited_scene_root
+	var edited_scene_root: Node = get_tree().edited_scene_root
 	if not edited_scene_root:
 		# Godot hasn't finished loading yet, so try loading the plugin again.
-		editor_interface.set_plugin_enabled("node25d", false)
-		editor_interface.set_plugin_enabled("node25d", true)
+		EditorInterface.set_plugin_enabled("node25d", false)
+		EditorInterface.set_plugin_enabled("node25d", true)
 		return
 
 	# Alright, we're loaded up. Now check if we have a valid
 	# world and assign it.
-	var world_2d = edited_scene_root.get_viewport().world_2d
+	var world_2d: World2D = edited_scene_root.get_viewport().world_2d
 	if world_2d == get_viewport().world_2d:
 		return  # This is the MainScreen25D scene opened in the editor!
 	viewport_2d.world_2d = world_2d
@@ -79,15 +80,20 @@ func _process(_delta: float) -> void:
 	viewport_overlay.canvas_transform = viewport_trans
 
 	# Delete unused gizmos.
-	var selection := editor_interface.get_selection().get_selected_nodes()
+	var selection := EditorInterface.get_selection().get_selected_nodes()
 	var gizmos := viewport_overlay.get_children()
-	for gizmo in gizmos:
-		var contains: bool = false
-		for selected in selection:
-			if selected == gizmo.node_25d and not view_mode_changed_this_frame:
-				contains = true
-		if not contains:
-			gizmo.queue_free()
+	for node in gizmos:
+		if node is Gizmo25D:
+			var gizmo := node as Gizmo25D
+			var contains: bool = false
+			for selected in selection:
+				if (
+					selected == gizmo.node_25d
+					and not view_mode_changed_this_frame
+				):
+					contains = true
+			if not contains:
+				gizmo.queue_free()
 
 	# Add new gizmos.
 	for selected in selection:
@@ -100,10 +106,10 @@ func _process(_delta: float) -> void:
 
 
 func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Node]) -> void:
-	var new: bool = true
 	for gizmo: Node in gizmos:
 		if node == gizmo.node_25d:
 			return
+
 	var gizmo := gizmo_25d_scene.instantiate() as Node2D
 	viewport_overlay.add_child(gizmo)
 	gizmo.setup(node)
@@ -112,36 +118,38 @@ func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Node]) -> void:
 # This only accepts input when the mouse is inside of the 2.5D viewport.
 func _gui_input(input_event: InputEvent) -> void:
 	if input_event is InputEventMouseButton:
-		if input_event.is_pressed():
-			if input_event.button_index == MOUSE_BUTTON_WHEEL_UP:
+		var mouse_event := input_event as InputEventMouseButton
+		if mouse_event.is_pressed():
+			if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
 				zoom_level += 1
 				accept_event()
-			elif input_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				zoom_level -= 1
 				accept_event()
-			elif input_event.button_index == MOUSE_BUTTON_MIDDLE:
+			elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
 				is_panning = true
 				pan_center = (
-					viewport_center - input_event.position / _get_zoom_amount()
+					viewport_center - mouse_event.position / _get_zoom_amount()
 				)
 				accept_event()
-			elif input_event.button_index == MOUSE_BUTTON_LEFT:
+			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 				var overlay_children := viewport_overlay.get_children()
-				for overlay_child in overlay_children:
+				for overlay_child: Node in overlay_children:
 					overlay_child.wants_to_move = true
 				accept_event()
-		elif input_event.button_index == MOUSE_BUTTON_MIDDLE:
+		elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
 			is_panning = false
 			accept_event()
-		elif input_event.button_index == MOUSE_BUTTON_LEFT:
+		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 			var overlay_children := viewport_overlay.get_children()
-			for overlay_child in overlay_children:
+			for overlay_child: Node in overlay_children:
 				overlay_child.wants_to_move = false
 			accept_event()
 	elif input_event is InputEventMouseMotion:
+		var motion_event := input_event as InputEventMouseMotion
 		if is_panning:
 			viewport_center = (
-				pan_center + input_event.position / _get_zoom_amount()
+				pan_center + motion_event.position / _get_zoom_amount()
 			)
 			accept_event()
 
@@ -159,7 +167,7 @@ func _recursive_change_view_mode(current_node: Node) -> void:
 
 func _get_zoom_amount() -> float:
 	const THIRTEENTH_ROOT_OF_2 = 1.05476607648
-	var zoom_amount = pow(THIRTEENTH_ROOT_OF_2, zoom_level)
+	var zoom_amount := pow(THIRTEENTH_ROOT_OF_2, zoom_level)
 	zoom_label.text = str(round(zoom_amount * 1000) / 10) + "%"
 	return zoom_amount
 

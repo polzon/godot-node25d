@@ -1,4 +1,5 @@
 @tool
+class_name Gizmo25D
 extends Node2D
 
 # If the mouse is farther than this many pixels, it won't grab anything.
@@ -22,16 +23,16 @@ var _start_mouse_position := Vector2.ZERO
 # Stores state of closest or currently used axis.
 var _dominant_axis: int = -1
 
-@onready var _lines = [$X, $Y, $Z]
+@onready var _lines: Array[Line2D] = [$X, $Y, $Z]
 @onready var _viewport_overlay: SubViewport = get_parent()
 @onready var _viewport_25d_bg: ColorRect = _viewport_overlay.get_parent()
 
 
 func _process(_delta: float) -> void:
 	if not _lines:
-		return  # Somehow this node hasn't been set up yet.
+		return # Somehow this node hasn't been set up yet.
 	if not node_25d or not _viewport_25d_bg:
-		return  # We're most likely viewing the Gizmo25D scene.
+		return # We're most likely viewing the Gizmo25D scene.
 	global_position = node_25d.global_position
 	# While getting the mouse position works in any viewport, it doesn't do
 	# anything significant unless the mouse is in the 2.5D viewport.
@@ -61,11 +62,11 @@ func _process(_delta: float) -> void:
 
 
 func determine_dominant_axis(mouse_position: Vector2) -> void:
-	var closest_distance = DEADZONE_RADIUS
+	var closest_distance := DEADZONE_RADIUS
 	_dominant_axis = -1
 	for i in range(3):
-		_lines[i].modulate.a = 0.8  # Unrelated, but needs a loop too.
-		var distance = _distance_to_segment_at_index(i, mouse_position)
+		_lines[i].modulate.a = 0.8 # Unrelated, but needs a loop too.
+		var distance := _distance_to_segment_at_index(i, mouse_position)
 		if distance < closest_distance:
 			closest_distance = distance
 			_dominant_axis = i
@@ -94,10 +95,10 @@ func move_using_mouse(mouse_position: Vector2) -> void:
 
 # Setup after _ready due to the onready vars, called manually in Viewport25D.gd.
 # Sets up the points based on the basis values of the Node25D.
-func setup(in_node_25d: Node25D):
+func setup(in_node_25d: Node25D) -> void:
 	node_25d = in_node_25d
-	var basis = node_25d.get_basis()
-	for i in range(3):
+	var basis := node_25d.get_basis()
+	for i: int in range(3):
 		_lines[i].points[1] = basis[i] * 3
 	global_position = node_25d.global_position
 	_spatial_node = node_25d.get_child(0)
@@ -116,17 +117,17 @@ func _snap_spatial_position(step_meters: float = 1.0 / Node25D.SCALE) -> void:
 # Figures out if the mouse is very close to a segment. This method is
 # specialized for this script, it assumes that each segment starts at
 # (0, 0) and it provides a deadzone around the origin.
-func _distance_to_segment_at_index(index, point):
+func _distance_to_segment_at_index(index: int, point: Vector2) -> float:
 	if not _lines:
 		return INF
 	if point.length_squared() < DEADZONE_RADIUS_SQ:
 		return INF
 
 	var segment_end: Vector2 = _lines[index].points[1]
-	var length_squared = segment_end.length_squared()
+	var length_squared := segment_end.length_squared()
 	if length_squared < DEADZONE_RADIUS_SQ:
 		return INF
 
-	var t = clamp(point.dot(segment_end) / length_squared, 0, 1)
-	var projection = t * segment_end
+	var t: float = clampf(point.dot(segment_end) / length_squared, 0, 1)
+	var projection: Vector2 = t * segment_end
 	return point.distance_to(projection)
