@@ -1,7 +1,7 @@
 @tool
 @icon("res://addons/node25d/icons/y_sort_25d.svg")
 class_name YSort25D
-extends Node # NOTE: NOT Node2D or Node25D.
+extends Node  # NOTE: NOT Node2D or Node25D.
 ## Sorts all Node25D children of its parent.
 ##
 ## This is different from the C# version of this project
@@ -10,7 +10,7 @@ extends Node # NOTE: NOT Node2D or Node25D.
 
 ## Whether or not to automatically call sort() in _process().
 @export var sort_enabled: bool = true
-var _parent_node: Node2D # NOT Node25D
+var _parent_node: Node2D  # NOT Node25D
 
 
 func _ready() -> void:

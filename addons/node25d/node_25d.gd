@@ -92,27 +92,27 @@ func set_spatial_position(value: Vector3) -> void:
 func set_view_mode(view_mode_index: int) -> void:
 	# TODO: This can be moved out of this class.
 	match view_mode_index:
-		0: # 45 Degrees
+		0:  # 45 Degrees
 			_basis_x = SCALE * Vector2(1, 0)
 			_basis_y = SCALE * Vector2(0, -INV_SQRT_2)
 			_basis_z = SCALE * Vector2(0, INV_SQRT_2)
-		1: # Isometric
+		1:  # Isometric
 			_basis_x = SCALE * Vector2(HALF_SQRT_3, 0.5)
 			_basis_y = SCALE * Vector2(0, -1)
 			_basis_z = SCALE * Vector2(-HALF_SQRT_3, 0.5)
-		2: # Top Down
+		2:  # Top Down
 			_basis_x = SCALE * Vector2(1, 0)
 			_basis_y = SCALE * Vector2(0, 0)
 			_basis_z = SCALE * Vector2(0, 1)
-		3: # Front Side
+		3:  # Front Side
 			_basis_x = SCALE * Vector2(1, 0)
 			_basis_y = SCALE * Vector2(0, -1)
 			_basis_z = SCALE * Vector2(0, 0)
-		4: # Oblique Y
+		4:  # Oblique Y
 			_basis_x = SCALE * Vector2(1, 0)
 			_basis_y = SCALE * Vector2(-INV_SQRT_2, -INV_SQRT_2)
 			_basis_z = SCALE * Vector2(0, 1)
-		5: # Oblique Z
+		5:  # Oblique Z
 			_basis_x = SCALE * Vector2(1, 0)
 			_basis_y = SCALE * Vector2(0, -1)
 			_basis_z = SCALE * Vector2(-INV_SQRT_2, INV_SQRT_2)
