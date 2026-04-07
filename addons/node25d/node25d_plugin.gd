@@ -1,7 +1,7 @@
 @tool
 extends EditorPlugin
 
-const MainPanel = preload(
+const MainPanel: PackedScene = preload(
 	"res://addons/node25d/main_screen/main_screen_25d.tscn"
 )
 
@@ -14,11 +14,26 @@ func _enter_tree() -> void:
 	viewport_25d.editor_interface = get_editor_interface()
 
 	# Add the main panel to the editor's main viewport.
-	EditorInterface.get_editor_main_screen().add_child(main_panel_instance)
+	var editor_main_screen := EditorInterface.get_editor_main_screen()
+	editor_main_screen.add_child(main_panel_instance)
 
-	# Hide the main panel.
+	# Move between 2D and 3D buttons.
+	# ? Why doesn't this change the order? Are the main buttons hardcoded?
+	editor_main_screen.move_child(main_panel_instance, 0)
+
 	_make_visible(false)
+	_enable_custom_types()
+
+
+func _exit_tree() -> void:
+	if main_panel_instance:
+		main_panel_instance.queue_free()
+	_disable_custom_types()
+
+
+func _enable_custom_types() -> void:
 	# When this plugin node enters tree, add the custom types.
+	# ? What is the purpose of this? Is this older Godot code?
 	add_custom_type(
 		"Node25D",
 		"Node2D",
@@ -39,9 +54,7 @@ func _enter_tree() -> void:
 	)
 
 
-func _exit_tree() -> void:
-	if main_panel_instance:
-		main_panel_instance.queue_free()
+func _disable_custom_types() -> void:
 	# When the plugin node exits the tree, remove the custom types.
 	remove_custom_type("ShadowMath25D")
 	remove_custom_type("YSort25D")
