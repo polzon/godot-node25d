@@ -1,15 +1,16 @@
-# Sorts all Node25D children of its parent.
-# This is different from the C# version of this project
-# because the execution order is different and otherwise
-# sorting is delayed by one frame.
 @tool
 @icon("res://addons/node25d/icons/y_sort_25d.svg")
 class_name YSort25D
-extends Node  # NOTE: NOT Node2D or Node25D.
+extends Node # NOTE: NOT Node2D or Node25D.
+## Sorts all Node25D children of its parent.
+##
+## This is different from the C# version of this project
+## because the execution order is different and otherwise
+## sorting is delayed by one frame.
 
-# Whether or not to automatically call sort() in _process().
+## Whether or not to automatically call sort() in _process().
 @export var sort_enabled: bool = true
-var _parent_node: Node2D  # NOT Node25D
+var _parent_node: Node2D # NOT Node25D
 
 
 func _ready() -> void:
@@ -36,11 +37,11 @@ func sort() -> void:
 
 	# We only want to get Node25D children.
 	# Currently, it also grabs Node2D children.
-	var node25d_nodes: Array[Node2D] = []
+	var node25d_nodes: Array[Node25D] = []
 	for n: Node in parent_children:
-		if n is Node2D:
+		if n is Node25D:
 			node25d_nodes.append(n)
-	node25d_nodes.sort_custom(Callable(Node25D, &"y_sort_slight_xz"))
+	node25d_nodes.sort_custom(Node25D.y_sort_slight_xz)
 
 	var z_index: int = -4000
 	for i: int in range(0, node25d_nodes.size()):

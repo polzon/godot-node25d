@@ -14,7 +14,7 @@ var moving: bool = false
 @onready var viewport_2d: SubViewport = $Viewport2D
 @onready var viewport_overlay: SubViewport = $ViewportOverlay
 @onready var view_mode_button_group: ButtonGroup = (
-	$"../TopBar/ViewModeButtons/45Degree".button_group
+	($"../TopBar/ViewModeButtons/45Degree" as BaseButton).button_group
 )
 @onready var zoom_label: Label = $"../TopBar/Zoom/ZoomPercent"
 @onready var gizmo_25d_scene: PackedScene = preload(
@@ -81,12 +81,12 @@ func _process(_delta: float) -> void:
 
 	# Delete unused gizmos.
 	var selection := EditorInterface.get_selection().get_selected_nodes()
-	var gizmos := viewport_overlay.get_children()
-	for node in gizmos:
+	var gizmos: Array[Gizmo25D] = []
+	for node in viewport_overlay.get_children():
 		if node is Gizmo25D:
 			var gizmo := node as Gizmo25D
 			var contains: bool = false
-			for selected in selection:
+			for selected: Node in selection:
 				if (
 					selected == gizmo.node_25d
 					and not view_mode_changed_this_frame
@@ -96,21 +96,21 @@ func _process(_delta: float) -> void:
 				gizmo.queue_free()
 
 	# Add new gizmos.
-	for selected in selection:
+	for selected: Node in selection:
 		if selected is Node25D:
-			_ensure_node25d_has_gizmo(selected, gizmos)
+			_ensure_node25d_has_gizmo(selected as Node25D, gizmos)
 
 	# Update gizmo zoom.
 	for gizmo in gizmos:
 		gizmo.set_zoom(zoom)
 
 
-func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Node]) -> void:
-	for gizmo: Node in gizmos:
+func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Gizmo25D]) -> void:
+	for gizmo: Gizmo25D in gizmos:
 		if node == gizmo.node_25d:
 			return
 
-	var gizmo := gizmo_25d_scene.instantiate() as Node2D
+	var gizmo := gizmo_25d_scene.instantiate() as Gizmo25D
 	viewport_overlay.add_child(gizmo)
 	gizmo.setup(node)
 
@@ -134,7 +134,7 @@ func _gui_input(input_event: InputEvent) -> void:
 				accept_event()
 			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 				var overlay_children := viewport_overlay.get_children()
-				for overlay_child: Node in overlay_children:
+				for overlay_child: Variant in overlay_children:
 					overlay_child.wants_to_move = true
 				accept_event()
 		elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
@@ -142,7 +142,7 @@ func _gui_input(input_event: InputEvent) -> void:
 			accept_event()
 		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 			var overlay_children := viewport_overlay.get_children()
-			for overlay_child: Node in overlay_children:
+			for overlay_child: Variant in overlay_children:
 				overlay_child.wants_to_move = false
 			accept_event()
 	elif input_event is InputEventMouseMotion:
