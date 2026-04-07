@@ -125,6 +125,16 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var warnings: PackedStringArray = []
 	if get_child(0) is not Node3D:
 		warnings.append("The first child of a Node25D must be a Node3D.")
+	if not _spatial_node:
+		warnings.append("Failed to get a Spatial Node!")
+	if get_child_count() == 1:
+		warnings.append(
+			(
+				"No second node found, so nothing will be rendered. "
+				+ "Add a Sprite2D or other Node2D as a child of Node25D "
+				+ "for it to render something."
+			)
+		)
 
 	return warnings
 
