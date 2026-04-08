@@ -9,15 +9,15 @@ extends Node2D
 ## Requires the first child to be a Node3D for spatial math; add a Sprite2D
 ## or other Node2D child to render the object.
 
-## The number of 2D units in one 3D unit.
-## Ideally, but not necessarily, an integer.
-const SCALE: int = 32
 ## Equal axis for 45 degree angles, used in some of the view modes.
 const INV_SQRT_2: float = 0.70710678118
 ## Cosine of 30 degrees, used for the isometric view mode basis.
 const HALF_SQRT_3: float = 0.86602540378
 
-# Exported spatial position for editor usage.
+## The number of 2D units in one 3D unit.
+## Ideally, but not necessarily, an integer.
+@export_range(1, 100, 1.0) var unit_scale: float = 32
+## Exported spatial position for editor usage.
 @export var spatial_position: Vector3:
 	get = get_spatial_position,
 	set = set_spatial_position
@@ -53,9 +53,9 @@ func node25d_ready() -> void:
 	_update_spatial_node()
 	child_order_changed.connect(_update_spatial_node)
 
-	_basis_x = SCALE * Vector2(1, 0)
-	_basis_y = SCALE * Vector2(0, -INV_SQRT_2)
-	_basis_z = SCALE * Vector2(0, INV_SQRT_2)
+	_basis_x = unit_scale * Vector2(1, 0)
+	_basis_y = unit_scale * Vector2(0, -INV_SQRT_2)
+	_basis_z = unit_scale * Vector2(0, INV_SQRT_2)
 
 
 # Call this method in _process, or whenever the position of this object changes.
@@ -63,10 +63,10 @@ func node25d_process() -> void:
 	if _spatial_node == null:
 		return
 
+	# Convert spatial position to flat 2D position using the Node25D basis.
 	var flat_pos: Vector2 = _spatial_position.x * _basis_x
 	flat_pos += _spatial_position.y * _basis_y
 	flat_pos += _spatial_position.z * _basis_z
-
 	set_spatial_position(_spatial_node.position)
 	global_position = flat_pos
 
@@ -92,48 +92,46 @@ func set_view_mode(view_mode_index: int) -> void:
 	# TODO: This can be moved out of this class.
 	match view_mode_index:
 		0:  # 45 Degrees
-			_basis_x = SCALE * Vector2(1, 0)
-			_basis_y = SCALE * Vector2(0, -INV_SQRT_2)
-			_basis_z = SCALE * Vector2(0, INV_SQRT_2)
+			_basis_x = unit_scale * Vector2(1, 0)
+			_basis_y = unit_scale * Vector2(0, -INV_SQRT_2)
+			_basis_z = unit_scale * Vector2(0, INV_SQRT_2)
 		1:  # Isometric
-			_basis_x = SCALE * Vector2(HALF_SQRT_3, 0.5)
-			_basis_y = SCALE * Vector2(0, -1)
-			_basis_z = SCALE * Vector2(-HALF_SQRT_3, 0.5)
+			_basis_x = unit_scale * Vector2(HALF_SQRT_3, 0.5)
+			_basis_y = unit_scale * Vector2(0, -1)
+			_basis_z = unit_scale * Vector2(-HALF_SQRT_3, 0.5)
 		2:  # Top Down
-			_basis_x = SCALE * Vector2(1, 0)
-			_basis_y = SCALE * Vector2(0, 0)
-			_basis_z = SCALE * Vector2(0, 1)
+			_basis_x = unit_scale * Vector2(1, 0)
+			_basis_y = unit_scale * Vector2(0, 0)
+			_basis_z = unit_scale * Vector2(0, 1)
 		3:  # Front Side
-			_basis_x = SCALE * Vector2(1, 0)
-			_basis_y = SCALE * Vector2(0, -1)
-			_basis_z = SCALE * Vector2(0, 0)
+			_basis_x = unit_scale * Vector2(1, 0)
+			_basis_y = unit_scale * Vector2(0, -1)
+			_basis_z = unit_scale * Vector2(0, 0)
 		4:  # Oblique Y
-			_basis_x = SCALE * Vector2(1, 0)
-			_basis_y = SCALE * Vector2(-INV_SQRT_2, -INV_SQRT_2)
-			_basis_z = SCALE * Vector2(0, 1)
+			_basis_x = unit_scale * Vector2(1, 0)
+			_basis_y = unit_scale * Vector2(-INV_SQRT_2, -INV_SQRT_2)
+			_basis_z = unit_scale * Vector2(0, 1)
 		5:  # Oblique Z
-			_basis_x = SCALE * Vector2(1, 0)
-			_basis_y = SCALE * Vector2(0, -1)
-			_basis_z = SCALE * Vector2(-INV_SQRT_2, INV_SQRT_2)
+			_basis_x = unit_scale * Vector2(1, 0)
+			_basis_y = unit_scale * Vector2(0, -1)
+			_basis_z = unit_scale * Vector2(-INV_SQRT_2, INV_SQRT_2)
 
 
 func _get_configuration_warnings() -> PackedStringArray:
-	if get_child_count() == 0:
-		return ["A Node25D must have a child Node3D to function."]
-
 	var warnings: PackedStringArray = []
-	if get_child(0) is not Node3D:
-		warnings.append("The first child of a Node25D must be a Node3D.")
-	if not _spatial_node:
-		warnings.append("Failed to get a Spatial Node!")
-	if get_child_count() == 1:
-		warnings.append(
-			(
-				"No second node found, so nothing will be rendered. "
-				+ "Add a Sprite2D or other Node2D as a child of Node25D "
-				+ "for it to render something."
-			)
-		)
+	var child_count := get_child_count(false)
+
+	# Ensure required nodes are present and setup.
+	if child_count == 0:
+		warnings.append("A Node25D must have a child Node3D to function.")
+	elif child_count == 1:
+		warnings.append("No second node found, so nothing will be rendered.")
+
+	# Ensure child nodes are correct types.
+	if child_count >= 1 and get_child(0) is not Node3D:
+		warnings.append("First child node must inherit from Node3D.")
+	if child_count >= 2 and get_child(1) is not Node2D:
+		warnings.append("Second child node must inherit from Node2D.")
 
 	return warnings
 
