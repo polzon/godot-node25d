@@ -1,16 +1,23 @@
 @tool
 extends EditorPlugin
 
-const MainPanel: PackedScene = preload(
-	"res://addons/node25d/main_screen/main_screen_25d.tscn"
-)
+# TODO: Clean this up, I really don't like these hard-coded paths.
+#       However I've been having even more issues with UIDs as well...
+const PATH_PREFIX := "res://addons/node25d/"
+const MAIN_SCREEN_TSCN_PATH := PATH_PREFIX + "editor/main_screen_25d.tscn"
+
+const MainPanel: PackedScene = preload(MAIN_SCREEN_TSCN_PATH)
 
 var main_panel_instance: VBoxContainer
 
 
 func _enter_tree() -> void:
+	# Create main panel.
 	main_panel_instance = MainPanel.instantiate()
 	var viewport_25d := main_panel_instance.get_child(1) as Viewport25D
+	assert(
+		viewport_25d != null, "Failed to get Viewport25D from MainPanel scene."
+	)
 	viewport_25d.editor_interface = get_editor_interface()
 
 	# Add the main panel to the editor's main viewport.
@@ -37,19 +44,19 @@ func _enable_custom_types() -> void:
 	add_custom_type(
 		"Node25D",
 		"Node2D",
-		preload("node_25d.gd"),
+		preload("src/node_25d.gd"),
 		preload("icons/node_25d.svg")
 	)
 	add_custom_type(
 		"YSort25D",
 		"Node",
-		preload("y_sort_25d.gd"),
+		preload("src/y_sort_25d.gd"),
 		preload("icons/y_sort_25d.svg")
 	)
 	add_custom_type(
 		"ShadowMath25D",
 		"CharacterBody3D",
-		preload("shadow_math_25d.gd"),
+		preload("src/shadow_math_25d.gd"),
 		preload("icons/shadow_math_25d.svg")
 	)
 

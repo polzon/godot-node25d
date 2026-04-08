@@ -8,7 +8,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface  # Set in node25d_plugin.gd
+var editor_interface: EditorInterface # Set in node25d_plugin.gd
 var moving: bool = false
 
 @onready var viewport_2d: SubViewport = $Viewport2D
@@ -18,7 +18,7 @@ var moving: bool = false
 )
 @onready var zoom_label: Label = $"../TopBar/Zoom/ZoomPercent"
 @onready var gizmo_25d_scene: PackedScene = preload(
-	"res://addons/node25d/main_screen/gizmo_25d.tscn"
+	Gizmo25D.GIZMO_25D_TSCN_PATH
 )
 
 
@@ -46,9 +46,12 @@ func _process(_delta: float) -> void:
 		# Something's not right... bail!
 		return
 
+
+func _handle_viewport_input() -> void:
 	# View mode polling.
 	var view_mode_changed_this_frame: bool = false
 	var new_view_mode := -1
+
 	if view_mode_button_group.get_pressed_button():
 		new_view_mode = view_mode_button_group.get_pressed_button().get_index()
 	if view_mode_index != new_view_mode:

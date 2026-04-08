@@ -2,6 +2,8 @@
 class_name Gizmo25D
 extends Node2D
 
+const GIZMO_25D_TSCN_PATH := "res://addons/node25d/editor/gizmo_25d.tscn"
+
 # If the mouse is farther than this many pixels, it won't grab anything.
 const DEADZONE_RADIUS = 20.0
 const DEADZONE_RADIUS_SQ = DEADZONE_RADIUS * DEADZONE_RADIUS
@@ -33,9 +35,9 @@ var _viewport_25d_bg := _viewport_overlay.get_parent() as SubViewportContainer
 
 func _process(_delta: float) -> void:
 	if not _lines:
-		return  # Somehow this node hasn't been set up yet.
+		return # Somehow this node hasn't been set up yet.
 	if not node_25d or not _viewport_25d_bg:
-		return  # We're most likely viewing the Gizmo25D scene.
+		return # We're most likely viewing the Gizmo25D scene.
 	global_position = node_25d.global_position
 	# While getting the mouse position works in any viewport, it doesn't do
 	# anything significant unless the mouse is in the 2.5D viewport.
@@ -68,7 +70,7 @@ func determine_dominant_axis(mouse_position: Vector2) -> void:
 	var closest_distance := DEADZONE_RADIUS
 	_dominant_axis = -1
 	for i in range(3):
-		_lines[i].modulate.a = 0.8  # Unrelated, but needs a loop too.
+		_lines[i].modulate.a = 0.8 # Unrelated, but needs a loop too.
 		var distance := _distance_to_segment_at_index(i, mouse_position)
 		if distance < closest_distance:
 			closest_distance = distance
