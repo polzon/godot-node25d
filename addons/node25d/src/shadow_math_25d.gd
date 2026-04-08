@@ -1,10 +1,10 @@
-# Adds a simple shadow below an object.
-# Place this ShadowMath25D node as a child of a Shadow25D, which
-# is below the target object in the scene tree (not as a child).
 @tool
 @icon("res://addons/node25d/icons/shadow_math_25d.svg")
 class_name ShadowMath25D
 extends ShapeCast3D
+## Adds a simple shadow below an object.
+## Place this ShadowMath25D node as a child of a Shadow25D, which
+## is below the target object in the scene tree (not as a child).
 
 var _shadow_root: Node25D
 var _target_math: Node3D

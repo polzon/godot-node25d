@@ -13,6 +13,7 @@ var moving: bool = false
 
 @onready var viewport_2d: SubViewport = $Viewport2D
 @onready var viewport_overlay: SubViewport = $ViewportOverlay
+# TODO: This can be cleaned up.
 @onready var view_mode_button_group: ButtonGroup = (
 	($"../TopBar/ViewModeButtons/45Degree" as BaseButton).button_group
 )

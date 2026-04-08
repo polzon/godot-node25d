@@ -97,6 +97,7 @@ func set_spatial_position(value: Vector3) -> void:
 
 ## Change the basis based on the [ViewMode] enum.
 ## This will change how the 3D position is converted to 2D
+# TODO: Move this to a Node25Basis class.
 func set_view_mode(new_view_mode: ViewMode) -> void:
 	view_mode = new_view_mode
 	match view_mode:
