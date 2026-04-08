@@ -3,10 +3,10 @@
 [ext_resource type="PackedScene" uid="uid://budl0hj8ftdyt" path="res://assets/ui/overlay.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://cbbihkbue04fe" path="res://assets/player/player_25d.tscn" id="2"]
 [ext_resource type="PackedScene" uid="uid://b37uwne43oth5" path="res://assets/shadow/shadow_25d.tscn" id="3"]
-[ext_resource type="Script" uid="uid://bs0hb3m2215pl" path="res://addons/node25d/node_25d.gd" id="4"]
+[ext_resource type="Script" uid="uid://cjxja8byk4qjb" path="res://addons/node25d/src/node_25d.gd" id="4"]
 [ext_resource type="Texture2D" uid="uid://nm51mxkx6iwc" path="res://assets/platform/textures/forty_five.png" id="6"]
 [ext_resource type="Script" uid="uid://126aar3nknsq" path="res://assets/platform/platform_sprite.gd" id="7"]
-[ext_resource type="Script" uid="uid://m4ringlopwgn" path="res://addons/node25d/y_sort_25d.gd" id="8"]
+[ext_resource type="Script" uid="uid://b4ro61p8nt7y4" path="res://addons/node25d/src/y_sort_25d.gd" id="8"]
 [ext_resource type="AudioStream" uid="uid://dvqd10cwbnq1b" path="res://assets/mr_mrs_robot.ogg" id="10"]
 
 [sub_resource type="BoxShape3D" id="1"]
@@ -36,6 +36,7 @@ z_index = -3952
 position = Vector2(-256, -113.137085)
 script = ExtResource("4")
 spatial_position = Vector3(-8, 5, 2.08165e-12)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform0" unique_id=1329576440]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5, 2.08165e-12)
@@ -55,6 +56,7 @@ z_index = -3954
 position = Vector2(-256, -339.41125)
 script = ExtResource("4")
 spatial_position = Vector3(-8, 5, -10)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform1" unique_id=1706330319]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5, -10)
@@ -74,6 +76,7 @@ z_index = -3962
 position = Vector2(0, 22.627417)
 script = ExtResource("4")
 spatial_position = Vector3(0, -1, 0)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform2" unique_id=1830802675]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
@@ -93,6 +96,7 @@ z_index = -3960
 position = Vector2(320, 22.627417)
 script = ExtResource("4")
 spatial_position = Vector3(10, -1, 0)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform3" unique_id=454010120]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -1, 0)
@@ -112,6 +116,7 @@ z_index = -3966
 position = Vector2(0, -203.64676)
 script = ExtResource("4")
 spatial_position = Vector3(0, -1, -10)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform4" unique_id=1625814449]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, -10)
@@ -131,6 +136,7 @@ z_index = -3984
 position = Vector2(320, -113.137085)
 script = ExtResource("4")
 spatial_position = Vector3(10, -5, -10)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform5" unique_id=1899789727]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -5, -10)
@@ -150,6 +156,7 @@ z_index = -3982
 position = Vector2(320, 113.137085)
 script = ExtResource("4")
 spatial_position = Vector3(10, -5, 0)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform6" unique_id=842629314]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -5, 0)
@@ -169,6 +176,7 @@ z_index = -3978
 position = Vector2(320, 339.41125)
 script = ExtResource("4")
 spatial_position = Vector3(10, -5, 10)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform7" unique_id=528435746]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -5, 10)
@@ -188,6 +196,7 @@ z_index = -3976
 position = Vector2(320, 565.6854)
 script = ExtResource("4")
 spatial_position = Vector3(10, -5, 20)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform20" unique_id=537124232]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -5, 20)
@@ -207,6 +216,7 @@ z_index = -3972
 position = Vector2(320, 791.9596)
 script = ExtResource("4")
 spatial_position = Vector3(10, -5, 30)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform21" unique_id=1715932482]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -5, 30)
@@ -226,6 +236,7 @@ z_index = -3970
 position = Vector2(320, 1018.23376)
 script = ExtResource("4")
 spatial_position = Vector3(10, -5, 40)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform22" unique_id=1393365561]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -5, 40)
@@ -245,6 +256,7 @@ z_index = -3974
 position = Vector2(640, 339.41125)
 script = ExtResource("4")
 spatial_position = Vector3(20, -5, 10)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform9" unique_id=623027031]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -5, 10)
@@ -264,6 +276,7 @@ z_index = -3994
 position = Vector2(896, 294.15643)
 script = ExtResource("4")
 spatial_position = Vector3(28, -10, 3)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform10" unique_id=327962615]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -10, 3)
@@ -283,6 +296,7 @@ z_index = -3992
 position = Vector2(896, 520.43054)
 script = ExtResource("4")
 spatial_position = Vector3(28, -10, 13)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform11" unique_id=952624349]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -10, 13)
@@ -302,6 +316,7 @@ z_index = -3988
 position = Vector2(896, 746.7048)
 script = ExtResource("4")
 spatial_position = Vector3(28, -10, 23)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform12" unique_id=1553115265]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -10, 23)
@@ -321,6 +336,7 @@ z_index = -3990
 position = Vector2(576, 746.7048)
 script = ExtResource("4")
 spatial_position = Vector3(18, -10, 23)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform13" unique_id=1148820602]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -10, 23)
@@ -340,6 +356,7 @@ z_index = -3996
 position = Vector2(256, 746.7048)
 script = ExtResource("4")
 spatial_position = Vector3(8, -10, 23)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform14" unique_id=1247630866]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -10, 23)
@@ -359,6 +376,7 @@ z_index = -3998
 position = Vector2(-64, 746.7048)
 script = ExtResource("4")
 spatial_position = Vector3(-2, -10, 23)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform15" unique_id=430367746]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -10, 23)
@@ -378,6 +396,7 @@ z_index = -4000
 position = Vector2(-384, 746.7048)
 script = ExtResource("4")
 spatial_position = Vector3(-12, -10, 23)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform23" unique_id=42452035]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, -10, 23)
@@ -397,6 +416,7 @@ z_index = -3980
 position = Vector2(-320, 565.6854)
 script = ExtResource("4")
 spatial_position = Vector3(-10, -5, 20)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform16" unique_id=78342621]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -5, 20)
@@ -416,6 +436,7 @@ z_index = -3986
 position = Vector2(-320, 339.41125)
 script = ExtResource("4")
 spatial_position = Vector3(-10, -5, 10)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform19" unique_id=1499084376]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -5, 10)
@@ -435,6 +456,7 @@ z_index = -3964
 position = Vector2(-480, 248.90158)
 script = ExtResource("4")
 spatial_position = Vector3(-15, -1, 10)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform17" unique_id=1851206104]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, -1, 10)
@@ -454,6 +476,7 @@ z_index = -3968
 position = Vector2(-480, 22.627417)
 script = ExtResource("4")
 spatial_position = Vector3(-15, -1, 0)
+view_mode = 0
 
 [node name="PlatformMath" type="StaticBody3D" parent="Platform18" unique_id=1442941345]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, -1, 0)

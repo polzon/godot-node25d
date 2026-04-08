@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b37uwne43oth5"]
 
-[ext_resource type="Script" uid="uid://bs0hb3m2215pl" path="res://addons/node25d/node_25d.gd" id="1"]
-[ext_resource type="Script" uid="uid://bstl8gr2ijpwe" path="res://addons/node25d/shadow_math_25d.gd" id="3"]
+[ext_resource type="Script" uid="uid://cjxja8byk4qjb" path="res://addons/node25d/src/node_25d.gd" id="1"]
+[ext_resource type="Script" uid="uid://cdnq8xym7jr5t" path="res://addons/node25d/src/shadow_math_25d.gd" id="3"]
 [ext_resource type="Texture2D" uid="uid://1jfn60l4n1qh" path="res://assets/shadow/textures/forty_five.png" id="5"]
 [ext_resource type="Script" uid="uid://iwbtlg2vw1qm" path="res://assets/shadow/shadow_sprite.gd" id="6"]
 
@@ -10,6 +10,7 @@
 [node name="Shadow25D" type="Node2D" unique_id=273196704]
 visible = false
 script = ExtResource("1")
+view_mode = 0
 
 [node name="ShadowMath25D" type="ShapeCast3D" parent="." unique_id=1185934174]
 shape = SubResource("SphereShape3D_v7tld")

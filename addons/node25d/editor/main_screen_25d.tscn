@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cghhpfyixmwoh"]
 
-[ext_resource type="Script" uid="uid://ps437rdu8x6r" path="res://addons/node25d/main_screen/viewport_25d.gd" id="1"]
-[ext_resource type="ButtonGroup" uid="uid://bp2vfx1wfs2w" path="res://addons/node25d/main_screen/view_mode_button_group.tres" id="2"]
+[ext_resource type="Script" uid="uid://ps437rdu8x6r" path="res://addons/node25d/editor/viewport_25d.gd" id="1"]
+[ext_resource type="ButtonGroup" uid="uid://bp2vfx1wfs2w" path="res://addons/node25d/editor/view_mode_button_group.tres" id="2"]
 
 [sub_resource type="ViewportTexture" id="1"]
 viewport_path = NodePath("Viewport25D/Viewport2D")

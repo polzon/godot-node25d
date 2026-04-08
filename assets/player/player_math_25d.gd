@@ -36,7 +36,7 @@ func _horizontal_movement(_delta: float) -> void:
 	if (
 		isometric_controls
 		and is_equal_approx(
-			Node25D.SCALE * 0.86602540378, _parent_node25d.get_basis()[0].x
+			_get_unit_scale() * 0.86602540378, _parent_node25d.get_basis()[0].x
 		)
 	):
 		local_x = Vector3(0.70710678118, 0, -0.70710678118)
@@ -67,3 +67,8 @@ func _vertical_movement(delta: float) -> void:
 
 	if k != null:
 		vertical_speed = 0
+
+
+func _get_unit_scale() -> float:
+	const DEFAULT_UNIT_SCALE := 32.0
+	return _parent_node25d.unit_scale if _parent_node25d else DEFAULT_UNIT_SCALE
