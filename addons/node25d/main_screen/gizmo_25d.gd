@@ -8,6 +8,8 @@ const DEADZONE_RADIUS_SQ = DEADZONE_RADIUS * DEADZONE_RADIUS
 # Not pixel perfect for all axes in all modes, but works well enough.
 # Rounding is not done until after the movement is finished.
 const ROUGHLY_ROUND_TO_PIXELS = true
+## Fallback unit scale if we cannot get a valid value from [member node_25d].
+const DEFAULT_UNIT_SCALE: float = 32.0
 
 # Input from Viewport25D, represents if the mouse is clicked.
 var wants_to_move: bool = false
@@ -77,19 +79,22 @@ func move_using_mouse(mouse_position: Vector2) -> void:
 	# Change modulate of unselected axes.
 	_lines[(_dominant_axis + 1) % 3].modulate.a = 0.5
 	_lines[(_dominant_axis + 2) % 3].modulate.a = 0.5
+
 	# Calculate movement.
 	var mouse_diff: Vector2 = mouse_position - _start_mouse_position
 	var line_end_point: Vector2 = _lines[_dominant_axis].points[1]
 	var projected_diff: Vector2 = mouse_diff.project(line_end_point)
 	var movement: float = (
-		projected_diff.length() * global_scale.x / Node25D.SCALE
+		projected_diff.length() * global_scale.x / get_unit_scale()
 	)
 	if is_equal_approx(PI, projected_diff.angle_to(line_end_point)):
 		movement *= -1
+
 	# Apply movement.
 	var move_dir_3d: Vector3 = _spatial_node.transform.basis[_dominant_axis]
 	_spatial_node.transform.origin += move_dir_3d * movement
 	_snap_spatial_position()
+
 	# Move the gizmo appropriately.
 	global_position = node_25d.global_position
 
@@ -110,7 +115,17 @@ func set_zoom(zoom: float) -> void:
 	global_scale = Vector2(new_scale, new_scale)
 
 
-func _snap_spatial_position(step_meters: float = 1.0 / Node25D.SCALE) -> void:
+func get_unit_scale() -> float:
+	return (
+		node_25d.unit_scale
+		if node_25d and node_25d.unit_scale > 0
+		else DEFAULT_UNIT_SCALE
+	)
+
+
+func _snap_spatial_position(
+	step_meters: float = 1.0 / get_unit_scale()
+) -> void:
 	var scaled_px: Vector3 = _spatial_node.transform.origin / step_meters
 	_spatial_node.transform.origin = scaled_px.round() * step_meters
 
