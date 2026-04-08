@@ -2,25 +2,40 @@
 @icon("res://addons/node25d/icons/node_25d.svg")
 class_name Node25D
 extends Node2D
-## A [Node2D] that converts a [Node3D] child position into 2D using
-## a 2.5D basis transform.
+## A [Node2D] in a trenchcoat that converts a child [Node3D] position
+## into 2D using a [b]2.5D basis transform[/b].
 ##
 ## Converts a 3D child position into 2D using a 2.5D basis transform.
 ## Requires the first child to be a Node3D for spatial math; add a Sprite2D
 ## or other Node2D child to render the object.
+
+enum ViewMode {
+	DEGREES_45,
+	ISOMETRIC,
+	TOP_DOWN,
+	FRONT_SIDE,
+	OBLIQUE_Y,
+	OBLIQUE_Z,
+}
 
 ## Equal axis for 45 degree angles, used in some of the view modes.
 const INV_SQRT_2: float = 0.70710678118
 ## Cosine of 30 degrees, used for the isometric view mode basis.
 const HALF_SQRT_3: float = 0.86602540378
 
-## The number of 2D units in one 3D unit.
-## Ideally, but not necessarily, an integer.
-@export_range(1, 100, 1.0) var unit_scale: float = 32
 ## Exported spatial position for editor usage.
 @export var spatial_position: Vector3:
 	get = get_spatial_position,
 	set = set_spatial_position
+
+@export_group("2D to 3D Calculations")
+
+## Number of [b]2D units[/b] in one [b]3D unit[/b].
+## It's recommended to use Integer values.
+@export_range(1, 100, 1.0) var unit_scale: float = 32
+## The [enum ViewMode] that determines how the 3D position is converted to 2D.
+@export var view_mode := ViewMode.TOP_DOWN:
+	set = set_view_mode
 
 # GDScript throws errors when Basis25D is its own structure.
 # There is a broken implementation in a hidden folder.
@@ -38,37 +53,32 @@ var _basis_z: Vector2
 var _spatial_position: Vector3
 var _spatial_node: Node3D
 
-
-# These are separated in case anyone wishes to easily extend Node25D.
-func _ready() -> void:
-	node25d_ready()
+func _init() -> void:
+	set_view_mode(view_mode)
+	child_order_changed.connect(_update_spatial_node)
+	ready.connect(_update_spatial_node)
 
 
 func _process(_delta: float) -> void:
-	node25d_process()
-
-
-# Call this method in _ready, or before node25d_process is first ran.
-func node25d_ready() -> void:
-	_update_spatial_node()
-	child_order_changed.connect(_update_spatial_node)
-
-	_basis_x = unit_scale * Vector2(1, 0)
-	_basis_y = unit_scale * Vector2(0, -INV_SQRT_2)
-	_basis_z = unit_scale * Vector2(0, INV_SQRT_2)
+		update_spatial_positioning()
 
 
 # Call this method in _process, or whenever the position of this object changes.
-func node25d_process() -> void:
+func update_spatial_positioning() -> void:
 	if _spatial_node == null:
 		return
 
-	# Convert spatial position to flat 2D position using the Node25D basis.
-	var flat_pos: Vector2 = _spatial_position.x * _basis_x
-	flat_pos += _spatial_position.y * _basis_y
-	flat_pos += _spatial_position.z * _basis_z
+	# Update positions.
 	set_spatial_position(_spatial_node.position)
-	global_position = flat_pos
+	global_position = spatial_to_flat(_spatial_position)
+
+
+## Convert spatial position to flat 2D position using the Node25D basis.
+func spatial_to_flat(spatial_pos: Vector3) -> Vector2:
+	var flat_pos: Vector2 = spatial_pos.x * _basis_x
+	flat_pos += spatial_pos.y * _basis_y
+	flat_pos += spatial_pos.z * _basis_z
+	return flat_pos
 
 
 func get_basis() -> Array[Vector2]:
@@ -85,36 +95,47 @@ func set_spatial_position(value: Vector3) -> void:
 		_spatial_node.position = value
 
 
-## Change the basis based on the view_mode_index argument.
-## This can be changed or removed in actual games where you only need
-## one view mode.
-func set_view_mode(view_mode_index: int) -> void:
-	# TODO: This can be moved out of this class.
-	match view_mode_index:
-		0:  # 45 Degrees
+## Change the basis based on the [ViewMode] enum.
+## This will change how the 3D position is converted to 2D
+func set_view_mode(new_view_mode: ViewMode) -> void:
+	view_mode = new_view_mode
+	match view_mode:
+		# 45 Degrees
+		ViewMode.DEGREES_45:
 			_basis_x = unit_scale * Vector2(1, 0)
 			_basis_y = unit_scale * Vector2(0, -INV_SQRT_2)
 			_basis_z = unit_scale * Vector2(0, INV_SQRT_2)
-		1:  # Isometric
+
+		# Isometric
+		ViewMode.ISOMETRIC:
 			_basis_x = unit_scale * Vector2(HALF_SQRT_3, 0.5)
 			_basis_y = unit_scale * Vector2(0, -1)
 			_basis_z = unit_scale * Vector2(-HALF_SQRT_3, 0.5)
-		2:  # Top Down
-			_basis_x = unit_scale * Vector2(1, 0)
-			_basis_y = unit_scale * Vector2(0, 0)
-			_basis_z = unit_scale * Vector2(0, 1)
-		3:  # Front Side
+
+
+		# Front Side
+		ViewMode.FRONT_SIDE:
 			_basis_x = unit_scale * Vector2(1, 0)
 			_basis_y = unit_scale * Vector2(0, -1)
 			_basis_z = unit_scale * Vector2(0, 0)
-		4:  # Oblique Y
+
+		# Oblique Y
+		ViewMode.OBLIQUE_Y:
 			_basis_x = unit_scale * Vector2(1, 0)
 			_basis_y = unit_scale * Vector2(-INV_SQRT_2, -INV_SQRT_2)
 			_basis_z = unit_scale * Vector2(0, 1)
-		5:  # Oblique Z
+
+		# Oblique Z
+		ViewMode.OBLIQUE_Z:
 			_basis_x = unit_scale * Vector2(1, 0)
 			_basis_y = unit_scale * Vector2(0, -1)
 			_basis_z = unit_scale * Vector2(-INV_SQRT_2, INV_SQRT_2)
+
+		# Top Down
+		ViewMode.TOP_DOWN, _:
+			_basis_x = unit_scale * Vector2(1, 0)
+			_basis_y = unit_scale * Vector2(0, 0)
+			_basis_z = unit_scale * Vector2(0, 1)
 
 
 func _get_configuration_warnings() -> PackedStringArray:
