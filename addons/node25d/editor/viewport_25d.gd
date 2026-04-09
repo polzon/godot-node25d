@@ -18,7 +18,7 @@ var moving: bool = false
 	($"../TopBar/ViewModeButtons/45Degree" as BaseButton).button_group
 )
 @onready var zoom_label: Label = $"../TopBar/Zoom/ZoomPercent"
-@onready var gizmo_25d_scene: PackedScene = preload(Gizmo25D.GIZMO_25D_TSCN_PATH)
+@onready var gizmo_25d_scene := preload(Gizmo25D.GIZMO_25D_TSCN_PATH)
 
 
 func _ready() -> void:
