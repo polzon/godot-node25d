@@ -31,6 +31,19 @@ z_index = -3958
 position = Vector2(0, 11.313708)
 spatial_position = Vector3(0, -0.5, 0)
 
+[node name="ShadowMath25D" parent="Shadow25D" index="0" unique_id=1185934174]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+collision_result = [{
+"collider": Object(StaticBody3D,"unique_name_in_owner":false,"process_mode":0,"process_priority":0,"process_physics_priority":0,"process_thread_group":0,"physics_interpolation_mode":0,"auto_translate_mode":0,"editor_description":"","transform":Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0),"rotation_edit_mode":0,"rotation_order":2,"top_level":false,"visible":true,"visibility_parent":NodePath(""),"disable_mode":0,"collision_layer":1048575,"collision_mask":1048575,"collision_priority":1.0,"input_ray_pickable":true,"input_capture_on_drag":false,"axis_lock_linear_x":false,"axis_lock_linear_y":false,"axis_lock_linear_z":false,"axis_lock_angular_x":false,"axis_lock_angular_y":false,"axis_lock_angular_z":false,"physics_material_override":null,"constant_linear_velocity":Vector3(0, 0, 0),"constant_angular_velocity":Vector3(0, 0, 0),"script":null)
+,
+"collider_id": 1696965138242,
+"linear_velocity": Vector3(0, 0, 0),
+"normal": Vector3(0, 1, 0),
+"point": Vector3(0, -0.5, 0),
+"rid": RID(650348242927619),
+"shape": 0
+}]
+
 [node name="Platform0" type="Node2D" parent="." unique_id=762804276]
 z_index = -3952
 position = Vector2(-256, -113.137085)
@@ -498,3 +511,6 @@ script = ExtResource("8")
 stream = ExtResource("10")
 volume_db = -20.0
 autoplay = true
+
+[editable path="Player25D"]
+[editable path="Shadow25D"]

@@ -8,7 +8,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface # Set in node25d_plugin.gd
+var editor_interface: EditorInterface  # Set in node25d_plugin.gd
 var moving: bool = false
 
 @onready var viewport_2d: SubViewport = $Viewport2D
@@ -18,18 +18,20 @@ var moving: bool = false
 	($"../TopBar/ViewModeButtons/45Degree" as BaseButton).button_group
 )
 @onready var zoom_label: Label = $"../TopBar/Zoom/ZoomPercent"
-@onready var gizmo_25d_scene: PackedScene = preload(
-	Gizmo25D.GIZMO_25D_TSCN_PATH
-)
+@onready var gizmo_25d_scene: PackedScene = preload(Gizmo25D.GIZMO_25D_TSCN_PATH)
 
 
 func _ready() -> void:
+	assert(is_inside_tree(), "ready() is called but not inside tree?")
+
 	# Give Godot a chance to fully load the scene. Should take two frames.
-	for i: int in 2:
+	for i: int in 5:
 		await get_tree().process_frame
 
-	var edited_scene_root: Node = get_tree().edited_scene_root
-	if not edited_scene_root:
+	var edited_scene_root: Node = (
+		get_tree().edited_scene_root if get_tree() else null
+	)
+	if not get_tree() or not edited_scene_root:
 		# Godot hasn't finished loading yet, so try loading the plugin again.
 		EditorInterface.set_plugin_enabled("node25d", false)
 		EditorInterface.set_plugin_enabled("node25d", true)
@@ -44,8 +46,10 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if not editor_interface:
-		# Something's not right... bail!
-		return
+		push_error("Editor interface is not set on Viewport25D. Aborting.")
+		set_process(false)
+	else:
+		_handle_viewport_input()
 
 
 func _handle_viewport_input() -> void:

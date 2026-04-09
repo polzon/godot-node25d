@@ -14,11 +14,19 @@ var main_panel_instance: VBoxContainer
 func _enter_tree() -> void:
 	# Create main panel.
 	main_panel_instance = MainPanel.instantiate()
-	var viewport_25d := main_panel_instance.get_child(1) as Viewport25D
+	var viewport_25d: Viewport25D = main_panel_instance.get_child(1)
 	assert(
 		viewport_25d != null, "Failed to get Viewport25D from MainPanel scene."
 	)
+	assert(
+		get_editor_interface() != null,
+		"Editor interface is null in _enter_tree."
+	)
 	viewport_25d.editor_interface = get_editor_interface()
+	assert(
+		viewport_25d.editor_interface == get_editor_interface(),
+		"Failed to set editor interface on Viewport25D."
+	)
 
 	# Add the main panel to the editor's main viewport.
 	var editor_main_screen := EditorInterface.get_editor_main_screen()
@@ -26,7 +34,7 @@ func _enter_tree() -> void:
 
 	# Move between 2D and 3D buttons.
 	# ? Why doesn't this change the order? Are the main buttons hardcoded?
-	editor_main_screen.move_child(main_panel_instance, 0)
+	# editor_main_screen.move_child(main_panel_instance, 0)
 
 	_make_visible(false)
 	_enable_custom_types()

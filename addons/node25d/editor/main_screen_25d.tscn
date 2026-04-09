@@ -85,12 +85,12 @@ text = "+"
 [node name="Spacer" type="Control" parent="TopBar/Zoom" unique_id=1430330369]
 layout_mode = 2
 
-[node name="Viewport25D" type="ColorRect" parent="." unique_id=41028209]
+[node name="Viewport25D" type="Control" parent="." unique_id=1915625833]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-color = Color(0.301961, 0.301961, 0.301961, 1)
 script = ExtResource("1")
+metadata/_custom_type_script = "uid://ps437rdu8x6r"
 
 [node name="Viewport2D" type="SubViewport" parent="Viewport25D" unique_id=2028696063]
 disable_3d = true
