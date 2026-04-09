@@ -36,11 +36,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 collision_result = [{
 "collider": Object(StaticBody3D,"unique_name_in_owner":false,"process_mode":0,"process_priority":0,"process_physics_priority":0,"process_thread_group":0,"physics_interpolation_mode":0,"auto_translate_mode":0,"editor_description":"","transform":Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0),"rotation_edit_mode":0,"rotation_order":2,"top_level":false,"visible":true,"visibility_parent":NodePath(""),"disable_mode":0,"collision_layer":1048575,"collision_mask":1048575,"collision_priority":1.0,"input_ray_pickable":true,"input_capture_on_drag":false,"axis_lock_linear_x":false,"axis_lock_linear_y":false,"axis_lock_linear_z":false,"axis_lock_angular_x":false,"axis_lock_angular_y":false,"axis_lock_angular_z":false,"physics_material_override":null,"constant_linear_velocity":Vector3(0, 0, 0),"constant_angular_velocity":Vector3(0, 0, 0),"script":null)
 ,
-"collider_id": 1696965138242,
+"collider_id": 5219995954891,
 "linear_velocity": Vector3(0, 0, 0),
 "normal": Vector3(0, 1, 0),
 "point": Vector3(0, -0.5, 0),
-"rid": RID(650348242927619),
+"rid": RID(1044209628872733),
 "shape": 0
 }]
 

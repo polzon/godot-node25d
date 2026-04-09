@@ -53,6 +53,7 @@ var _basis_z: Vector2
 var _spatial_position: Vector3
 var _spatial_node: Node3D
 
+
 func _init() -> void:
 	set_view_mode(view_mode)
 	child_order_changed.connect(_update_spatial_node)
@@ -60,7 +61,7 @@ func _init() -> void:
 
 
 func _process(_delta: float) -> void:
-		update_spatial_positioning()
+	update_spatial_positioning()
 
 
 # Call this method in _process, or whenever the position of this object changes.
@@ -112,7 +113,6 @@ func set_view_mode(new_view_mode: ViewMode) -> void:
 			_basis_x = unit_scale * Vector2(HALF_SQRT_3, 0.5)
 			_basis_y = unit_scale * Vector2(0, -1)
 			_basis_z = unit_scale * Vector2(-HALF_SQRT_3, 0.5)
-
 
 		# Front Side
 		ViewMode.FRONT_SIDE:

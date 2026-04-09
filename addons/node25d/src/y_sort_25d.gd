@@ -11,7 +11,7 @@ extends Node
 ## Whether or not to automatically call [method sort] in [method _process].
 @export var sort_enabled: bool = true
 
-var _parent_node: Node2D # NOT Node25D
+var _parent_node: Node2D  # NOT Node25D
 
 
 func _ready() -> void:

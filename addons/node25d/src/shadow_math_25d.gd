@@ -11,10 +11,10 @@ var _target_math: Node3D
 
 
 func _ready() -> void:
-	_shadow_root = get_parent()
+	_shadow_root = get_parent() as Node25D
 
 	var index := _shadow_root.get_index()
-	if index > 0: # Else, shadow is not in a valid place.
+	if index > 0:  # Else, shadow is not in a valid place.
 		var sibling_25d: Node = _shadow_root.get_parent().get_child(index - 1)
 		if sibling_25d.get_child_count() > 0:
 			var target := sibling_25d.get_child(0) as Node3D
