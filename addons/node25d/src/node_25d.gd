@@ -9,6 +9,9 @@ extends Node2D
 ## Requires the first child to be a Node3D for spatial math; add a Sprite2D
 ## or other Node2D child to render the object.
 
+# TODO: Implement signal for when the spatial position changes.
+# TODO: Implement signal when the view mode changes.
+
 enum ViewMode {
 	DEGREES_45,
 	ISOMETRIC,

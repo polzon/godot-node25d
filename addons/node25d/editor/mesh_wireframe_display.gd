@@ -1,8 +1,10 @@
 @tool
 class_name MeshWireframeDisplay
 extends RefCounted
-## Draw tool to display a wireframe of a CollisionShape3D's shape in
-## the 2.5D viewport, as part of Gizmo25D.
+## Detects a CollisionShape3D child of a Node25D and draws a wireframe
+## of its debug mesh in the 2.5D viewport.
+
+# TODO: Try to detect a Node25D parent of any selected node, and draw that too.
 
 # ? We can probably convert this to a Node2D instead of creating _draw_host.
 
