@@ -8,7 +8,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface # Set in node25d_plugin.gd
+var editor_interface: EditorInterface  # Set in node25d_plugin.gd
 var moving: bool = false
 
 @onready var viewport_2d: SubViewport = $Viewport2D
