@@ -26,8 +26,8 @@ func _init(parent_gizmo_25d: Gizmo25D) -> void:
 	_draw_host.name = "MeshWireframeDrawHost"
 	_viewport_overlay.add_child(_draw_host)
 
-	# if not _draw_host.draw.is_connected(_on_draw_requested):
-	# 	_draw_host.draw.connect(_on_draw_requested)
+	if not _draw_host.draw.is_connected(_on_draw_requested):
+		_draw_host.draw.connect(_on_draw_requested)
 	if not _gizmo_25d.tree_exiting.is_connected(_on_gizmo_tree_exiting):
 		_gizmo_25d.tree_exiting.connect(_on_gizmo_tree_exiting)
 
