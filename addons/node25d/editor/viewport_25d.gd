@@ -8,7 +8,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface  # Set in node25d_plugin.gd
+var editor_interface: EditorInterface # Set in node25d_plugin.gd
 var moving: bool = false
 
 @onready var viewport_2d: SubViewport = $Viewport2D
@@ -145,20 +145,22 @@ func _gui_input(input_event: InputEvent) -> void:
 				accept_event()
 
 			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
-				var overlay_children := viewport_overlay.get_children()
-				for overlay_child: Variant in overlay_children:
-					overlay_child.wants_to_move = true
-				accept_event()
+				var gizmo := _get_first_gizmo_child_node()
+				if gizmo:
+					gizmo.wants_to_move = true
+					accept_event()
+				else:
+					push_warning("Failed to find gizmo node.")
 
 		elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
 			is_panning = false
 			accept_event()
 
 		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
-			var overlay_children := viewport_overlay.get_children()
-			for overlay_child: Variant in overlay_children:
-				overlay_child.wants_to_move = false
-			accept_event()
+			var gizmo := _get_first_gizmo_child_node()
+			if gizmo:
+				gizmo.wants_to_move = false
+				accept_event()
 
 	elif input_event is InputEventMouseMotion:
 		var motion_event := input_event as InputEventMouseMotion
@@ -178,6 +180,13 @@ func _recursive_change_view_mode(current_node: Node) -> void:
 
 	for child: Node in current_node.get_children():
 		_recursive_change_view_mode(child)
+
+
+func _get_first_gizmo_child_node() -> Gizmo25D:
+	for overlay_child: Node in viewport_overlay.get_children():
+		if overlay_child is Gizmo25D:
+			return overlay_child
+	return null
 
 
 func _get_zoom_amount() -> float:
