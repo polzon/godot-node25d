@@ -1,6 +1,10 @@
 @tool
 class_name MeshWireframeDisplay
 extends RefCounted
+## Draw tool to display a wireframe of a CollisionShape3D's shape in
+## the 2.5D viewport, as part of Gizmo25D.
+
+# ? We can probably convert this to a Node2D instead of creating _draw_host.
 
 const WIREFRAME_COLOR: Color = Color(1, 1, 1, 0.45)
 const WIREFRAME_WIDTH: float = 1.0
@@ -59,16 +63,25 @@ func _on_draw_requested() -> void:
 
 
 func _draw_surface_wireframe(mesh: Mesh, surface_idx: int) -> void:
-	# print("drawing")
+	assert(mesh, "MeshWireframeDisplay expected a valid Mesh to draw.")
 	var arrays: Array = mesh.surface_get_arrays(surface_idx)
-	if arrays.size() <= Mesh.ARRAY_VERTEX:
+	if (
+		arrays.size() <= Mesh.ARRAY_VERTEX
+		or arrays.is_empty()
+		or arrays[Mesh.ARRAY_VERTEX] is not PackedVector3Array
+	):
 		return
 
 	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	if vertices.is_empty():
 		return
 
-	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var indices := PackedInt32Array()
+	if arrays.size() > Mesh.ARRAY_INDEX:
+		if arrays[Mesh.ARRAY_INDEX] is PackedInt32Array:
+			var surface_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+			indices = surface_indices
+
 	if indices.is_empty():
 		for i: int in range(0, vertices.size() - 2, 3):
 			_draw_triangle_edges(vertices[i], vertices[i + 1], vertices[i + 2])
@@ -102,8 +115,13 @@ func _draw_triangle_edges(a: Vector3, b: Vector3, c: Vector3) -> void:
 func _draw_world_line(from_local: Vector3, to_local: Vector3) -> void:
 	var from_global: Vector3 = _collision_shape.global_transform * from_local
 	var to_global: Vector3 = _collision_shape.global_transform * to_local
-	var from_spatial: Vector3 = _spatial_node.to_local(from_global)
-	var to_spatial: Vector3 = _spatial_node.to_local(to_global)
+
+	var from_spatial_local: Vector3 = _spatial_node.to_local(from_global)
+	var to_spatial_local: Vector3 = _spatial_node.to_local(to_global)
+
+	# Convert from spatial-node local space into Node25D 3D space.
+	var from_spatial: Vector3 = _spatial_node.transform * from_spatial_local
+	var to_spatial: Vector3 = _spatial_node.transform * to_spatial_local
 
 	var from_flat: Vector2 = _node25d.spatial_to_flat(from_spatial)
 	var to_flat: Vector2 = _node25d.spatial_to_flat(to_spatial)
