@@ -22,6 +22,7 @@ var _draw_host: Node2D
 func _init(parent_gizmo_25d: Gizmo25D) -> void:
 	_gizmo_25d = parent_gizmo_25d
 	if not _gizmo_25d:
+		printerr("MeshWireframeDisplay requires a Gizmo25D to function.")
 		return
 
 	_node25d = _gizmo_25d.node_25d

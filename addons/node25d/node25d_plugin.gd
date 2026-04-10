@@ -97,4 +97,5 @@ func _get_plugin_icon() -> Texture2D:
 
 
 func _handles(obj: Object) -> bool:
+	# TODO: Check if object is a child of Node25D since we likely want that too.
 	return obj is Node25D
