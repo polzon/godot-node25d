@@ -8,7 +8,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface  # Set in node25d_plugin.gd
+var editor_interface: EditorInterface # Set in node25d_plugin.gd
 var moving: bool = false
 
 @onready var viewport_2d: SubViewport = $Viewport2D
@@ -101,6 +101,8 @@ func _handle_viewport_input() -> void:
 					contains = true
 			if not contains:
 				gizmo.queue_free()
+			else:
+				gizmos.append(gizmo)
 
 	# Add new gizmos.
 	for selected: Node in selection:
