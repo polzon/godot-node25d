@@ -5,7 +5,10 @@ extends Control
 static var _debug_failed_find_attempts: int = 0
 
 var enable_print_debug: bool:
-	get = is_editor_debug_setting_enabled
+	get():
+		return Node25DPlugin.get_or_set_editor_setting(
+			"viewport_25d", "debug/enable_print_debug", false
+		)
 
 var zoom_level: int = 0
 var is_panning: bool = false
@@ -241,9 +244,3 @@ func _on_ZoomIn_pressed() -> void:
 
 func _on_ZoomReset_pressed() -> void:
 	zoom_level = 0
-
-
-static func is_editor_debug_setting_enabled() -> bool:
-	return Node25DPlugin.get_editor_setting(
-		"viewport_25d", "debug/enable_print_debug", false
-	)

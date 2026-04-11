@@ -116,7 +116,10 @@ func _handles(obj: Object) -> bool:
 	return false
 
 
-static func get_editor_setting(
+## Helper function to get or set an editor setting for this plugin.
+## If the setting doesn't exist, it will be created with the
+## provided default value.
+static func get_or_set_editor_setting(
 	category_name: String, setting_name: String, default_value: Variant
 ) -> Variant:
 	var editor_settings := EditorInterface.get_editor_settings()
