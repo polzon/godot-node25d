@@ -179,3 +179,16 @@ static func y_sort_slight_xz(a: Node25D, b: Node25D) -> bool:
 	var b_index := b._spatial_position.y + 0.001 * b_xz_spatial
 
 	return a_index < b_index
+
+
+static func find_node25d_parent(node: Node) -> Node25D:
+	var parent := node.get_parent()
+	while parent:
+		if parent is Node25D:
+			return parent
+		parent = parent.get_parent()
+	return null
+
+
+static func has_node25d_parent(node: Node) -> bool:
+	return find_node25d_parent(node) != null

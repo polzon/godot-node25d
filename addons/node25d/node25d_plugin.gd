@@ -10,6 +10,10 @@ const MainPanel: PackedScene = preload(MAIN_SCREEN_TSCN_PATH)
 
 var main_panel_instance: VBoxContainer
 
+## If the plugin should also handle children of Node25D nodes.
+## This will be toggled in the plugin settings later.
+var handles_node25d_children: bool = true
+
 
 func _enter_tree() -> void:
 	# Create main panel.
@@ -35,7 +39,6 @@ func _enter_tree() -> void:
 	# Move between 2D and 3D buttons.
 	# ? Why doesn't this change the order? Are the main buttons hardcoded?
 	# editor_main_screen.move_child(main_panel_instance, 0)
-
 	_make_visible(false)
 	_enable_custom_types()
 
@@ -97,5 +100,11 @@ func _get_plugin_icon() -> Texture2D:
 
 
 func _handles(obj: Object) -> bool:
-	# TODO: Check if object is a child of Node25D since we likely want that too.
-	return obj is Node25D
+	if obj is Node:
+		var node_obj := obj as Node
+		return node_obj is Node25D or (
+			Node25D.has_node25d_parent(node_obj)
+			if handles_node25d_children
+			else false
+		)
+	return false
