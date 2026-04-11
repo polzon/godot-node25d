@@ -20,6 +20,7 @@ enum ViewMode {
 	OBLIQUE_Y,
 	OBLIQUE_Z,
 	DEGREES_25,
+	RPG_OBLIQUE,
 }
 
 ## Equal axis for 45 degree angles, used in some of the view modes.
@@ -152,6 +153,13 @@ func set_view_mode(new_view_mode: ViewMode) -> void:
 			_basis_x = unit_scale * Vector2(1, 0)
 			_basis_y = unit_scale * Vector2(0, -TWO_INV_SQRT_5)
 			_basis_z = unit_scale * Vector2(0, INV_SQRT_5)
+
+		# RPG Oblique — ground is top-down, walls project straight up at 0.5x
+		# height (classic GBC/NES RPG look, e.g. Pokémon Red/Blue)
+		ViewMode.RPG_OBLIQUE:
+			_basis_x = unit_scale * Vector2(1, 0)
+			_basis_y = unit_scale * Vector2(0, -0.5)
+			_basis_z = unit_scale * Vector2(0, 1)
 
 
 func _get_configuration_warnings() -> PackedStringArray:

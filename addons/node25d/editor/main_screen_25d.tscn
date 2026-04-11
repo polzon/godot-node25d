@@ -60,6 +60,11 @@ layout_mode = 2
 button_group = ExtResource("2")
 text = "25 Degree"
 
+[node name="ObliqueRPG" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=1010909422]
+layout_mode = 2
+button_group = ExtResource("2")
+text = "Oblique RPG"
+
 [node name="Zoom" type="HBoxContainer" parent="TopBar" unique_id=1214157372]
 layout_mode = 2
 size_flags_horizontal = 3
