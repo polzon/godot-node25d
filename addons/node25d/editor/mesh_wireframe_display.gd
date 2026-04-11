@@ -8,8 +8,15 @@ extends RefCounted
 
 # ? We can probably convert this to a Node2D instead of creating _draw_host.
 
+enum DrawMethod {
+	SPATIAL_TO_FLAT,
+	WORLD_TO_FLAT,
+}
+
 const WIREFRAME_COLOR: Color = Color(1, 1, 1, 0.45)
 const WIREFRAME_WIDTH: float = 1.0
+
+var draw_method := DrawMethod.SPATIAL_TO_FLAT
 
 var _gizmo_25d: Gizmo25D
 var _spatial_node: Node3D
@@ -110,9 +117,18 @@ func _draw_surface_wireframe(mesh: Mesh, surface_idx: int) -> void:
 
 
 func _draw_triangle_edges(a: Vector3, b: Vector3, c: Vector3) -> void:
-	_draw_world_line(a, b)
-	_draw_world_line(b, c)
-	_draw_world_line(c, a)
+	if draw_method == DrawMethod.SPATIAL_TO_FLAT:
+		_draw_world_line(a, b)
+		_draw_world_line(b, c)
+		_draw_world_line(c, a)
+	elif draw_method == DrawMethod.WORLD_TO_FLAT:
+		_draw_world_line2(a, b)
+		_draw_world_line2(b, c)
+		_draw_world_line2(c, a)
+	else:
+		printerr(
+			"MeshWireframeDisplay has an invalid draw method: ", draw_method
+		)
 
 
 func _draw_world_line(from_local: Vector3, to_local: Vector3) -> void:
@@ -129,6 +145,19 @@ func _draw_world_line(from_local: Vector3, to_local: Vector3) -> void:
 	var from_flat: Vector2 = _node25d.spatial_to_flat(from_spatial)
 	var to_flat: Vector2 = _node25d.spatial_to_flat(to_spatial)
 
+	_draw_host.draw_line(
+		from_flat, to_flat, WIREFRAME_COLOR, WIREFRAME_WIDTH, false
+	)
+
+
+## Same as [_draw_world_line], but with alternate math.
+func _draw_world_line2(from_local: Vector3, to_local: Vector3) -> void:
+	var from_flat: Vector2 = _node25d.spatial_to_flat(
+		from_local + _collision_shape.global_position
+	)
+	var to_flat: Vector2 = _node25d.spatial_to_flat(
+		to_local * _collision_shape.global_position
+	)
 	_draw_host.draw_line(
 		from_flat, to_flat, WIREFRAME_COLOR, WIREFRAME_WIDTH, false
 	)
