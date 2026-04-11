@@ -122,7 +122,7 @@ static func get_editor_setting(
 	var editor_settings := EditorInterface.get_editor_settings()
 	var full_setting_path := (
 		("%s/%s/%s" % [EDITOR_SETTINGS_PREFIX, category_name, setting_name])
-		.simplify_path()
+		. simplify_path()
 	)
 	if not editor_settings.has_setting(full_setting_path):
 		editor_settings.set_setting(full_setting_path, default_value)

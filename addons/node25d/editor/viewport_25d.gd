@@ -13,7 +13,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface # Set in node25d_plugin.gd
+var editor_interface: EditorInterface  # Set in node25d_plugin.gd
 var moving: bool = false
 var zoom: float = 1.0
 
@@ -245,5 +245,5 @@ func _on_ZoomReset_pressed() -> void:
 
 static func is_editor_debug_setting_enabled() -> bool:
 	return Node25DPlugin.get_editor_setting(
-		"viewport_25d", "enable_print_debug", false
+		"viewport_25d", "debug/enable_print_debug", false
 	)

@@ -134,7 +134,15 @@ func move_using_mouse(mouse_position: Vector2) -> void:
 	_spatial_node.transform.origin = (
 		_start_spatial_origin + move_dir_3d * movement
 	)
-	print("lol5")
+	if enable_print_debug:
+		print(
+			"Mouse diff: ",
+			mouse_diff,
+			" Projected diff: ",
+			projected_diff,
+			" Movement: ",
+			movement
+		)
 	_snap_spatial_position()
 
 	# Move the gizmo appropriately.
@@ -193,7 +201,10 @@ func _distance_to_segment_at_index(index: int, point: Vector2) -> float:
 			push_warning(
 				"Line segment at index %d is too short to interact." % index
 			)
-		print("lol2")
+		if enable_print_debug:
+			print(
+				"Distance to segment at index %d: %f" % [index, point.length()]
+			)
 		return INF
 
 	var t: float = clampf(point.dot(segment_end) / length_squared, 0, 1)
@@ -210,5 +221,5 @@ func _distance_to_segment_at_index(index: int, point: Vector2) -> float:
 
 static func is_editor_debug_setting_enabled() -> bool:
 	return Node25DPlugin.get_editor_setting(
-		"gizmo25d", "enable_print_debug", false
+		"gizmo_25d", "debug/enable_print_debug", false
 	)
