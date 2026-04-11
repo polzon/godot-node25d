@@ -25,6 +25,35 @@ var _last_mouse_position_viewport: Vector2 = Vector2.ZERO
 
 var _view_mode_changed_this_frame: bool = false
 
+var _touchpad_pan_enabled: bool:
+	get():
+		return Node25DPlugin.get_or_set_editor_setting(
+			"viewport_25d", "input/touchpad_pan_enabled", false
+		)
+
+var _touchpad_wheel_pan_enabled: bool:
+	get():
+		return Node25DPlugin.get_or_set_editor_setting(
+			"viewport_25d", "input/touchpad_wheel_pan_enabled", false
+		)
+
+var _touchpad_wheel_pan_step: float:
+	get():
+		var pan_step_value: Variant = Node25DPlugin.get_or_set_editor_setting(
+			"viewport_25d", "input/touchpad_wheel_pan_step", 40.0
+		)
+		if pan_step_value is float:
+			return pan_step_value
+		if pan_step_value is int:
+			return pan_step_value
+		return 40.0
+
+var _touchpad_pan_invert: bool:
+	get():
+		return Node25DPlugin.get_or_set_editor_setting(
+			"viewport_25d", "input/touchpad_pan_invert", true
+		)
+
 @onready var viewport_2d: SubViewport = %Viewport2D
 @onready var viewport_overlay: SubViewport = %ViewportOverlay
 
@@ -91,12 +120,6 @@ func _wait_for_edited_scene_root(max_wait_frames: int) -> Node:
 func _handle_viewport_input() -> void:
 	_view_mode_changed_this_frame = false
 	_last_mouse_position_viewport = get_local_mouse_position()
-
-	# Zooming.
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_WHEEL_UP):
-		zoom_level += 1
-	elif Input.is_mouse_button_pressed(MOUSE_BUTTON_WHEEL_DOWN):
-		zoom_level -= 1
 	zoom = _get_zoom_amount()
 
 	# SubViewport size.
@@ -158,7 +181,8 @@ func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Gizmo25D]) -> void:
 # This only accepts input when the mouse is inside of the 2.5D viewport.
 func _input(input_event: InputEvent) -> void:
 	if not (
-		input_event is InputEventMouseButton
+		input_event is InputEventPanGesture
+		or input_event is InputEventMouseButton
 		or input_event is InputEventMouseMotion
 	):
 		return
@@ -166,16 +190,44 @@ func _input(input_event: InputEvent) -> void:
 	if not get_global_rect().has_point(get_global_mouse_position()):
 		return
 
-	if input_event is InputEventMouseButton:
+	if input_event is InputEventPanGesture:
+		if not _touchpad_pan_enabled:
+			return
+
+		var pan_event := input_event as InputEventPanGesture
+		viewport_center += (
+			_apply_touchpad_pan_invert(pan_event.delta) / _get_zoom_amount()
+		)
+		if enable_print_debug:
+			print("Touchpad panning viewport to center:", viewport_center)
+		get_viewport().set_input_as_handled()
+
+	elif input_event is InputEventMouseButton:
 		var mouse_event := input_event as InputEventMouseButton
 		_last_mouse_position_viewport = mouse_event.position
 		if mouse_event.is_pressed():
 			if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
-				zoom_level += 1
+				if _should_pan_from_wheel(mouse_event):
+					_pan_from_wheel(mouse_event)
+				else:
+					zoom_level += 1
 				get_viewport().set_input_as_handled()
 
 			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-				zoom_level -= 1
+				if _should_pan_from_wheel(mouse_event):
+					_pan_from_wheel(mouse_event)
+				else:
+					zoom_level -= 1
+				get_viewport().set_input_as_handled()
+
+			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_LEFT:
+				if _touchpad_wheel_pan_enabled:
+					_pan_from_wheel(mouse_event)
+					get_viewport().set_input_as_handled()
+
+			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_RIGHT:
+				if _touchpad_wheel_pan_enabled:
+					_pan_from_wheel(mouse_event)
 				get_viewport().set_input_as_handled()
 
 			elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
@@ -223,6 +275,45 @@ func _input(input_event: InputEvent) -> void:
 			if enable_print_debug:
 				print("Panning viewport to center:", viewport_center)
 			get_viewport().set_input_as_handled()
+
+
+func _should_pan_from_wheel(mouse_event: InputEventMouseButton) -> bool:
+	if not _touchpad_wheel_pan_enabled:
+		return false
+
+	# Keep Ctrl + wheel available for explicit zoom with a touchpad.
+	return not mouse_event.ctrl_pressed
+
+
+func _pan_from_wheel(mouse_event: InputEventMouseButton) -> void:
+	var pan_delta := Vector2.ZERO
+	var pan_step := _touchpad_wheel_pan_step * mouse_event.factor
+
+	if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
+		pan_delta.y -= pan_step
+	elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		pan_delta.y += pan_step
+	elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_LEFT:
+		pan_delta.x -= pan_step
+	elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_RIGHT:
+		pan_delta.x += pan_step
+
+	# Shift + vertical wheel commonly represents horizontal touchpad scroll.
+	if mouse_event.shift_pressed and pan_delta.y != 0.0:
+		pan_delta.x = pan_delta.y
+		pan_delta.y = 0.0
+
+	viewport_center += (
+		_apply_touchpad_pan_invert(pan_delta) / _get_zoom_amount()
+	)
+	if enable_print_debug:
+		print("Wheel panning viewport to center:", viewport_center)
+
+
+func _apply_touchpad_pan_invert(pan_delta: Vector2) -> Vector2:
+	if _touchpad_pan_invert:
+		return -pan_delta
+	return pan_delta
 
 
 func get_last_mouse_position_viewport() -> Vector2:
