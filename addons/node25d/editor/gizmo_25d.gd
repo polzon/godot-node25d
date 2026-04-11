@@ -103,15 +103,14 @@ func determine_dominant_axis(mouse_position: Vector2) -> void:
 	var closest_distance := DEADZONE_RADIUS
 	_dominant_axis = -1
 	for i in range(3):
-		_lines[i].modulate.a = 0.8 # Unrelated, but needs a loop too.
+		_lines[i].modulate.a = 0.8  # Unrelated, but needs a loop too.
 		var distance := _distance_to_segment_at_index(i, mouse_position)
 		if distance < closest_distance:
 			closest_distance = distance
 			_dominant_axis = i
 	if enable_print_debug and _dominant_axis == -1:
 		printerr(
-			"Failed to find a dominant axis. Mouse position: ",
-			mouse_position
+			"Failed to find a dominant axis. Mouse position: ", mouse_position
 		)
 
 
@@ -151,7 +150,7 @@ func setup(in_node_25d: Node25D) -> void:
 		_lines[i].points[1] = basis[i] * 3
 	global_position = node_25d.global_position
 	_spatial_node = node_25d.get_child(0)
-	_mesh_wireframe_display = MeshWireframeDisplay.new(self )
+	_mesh_wireframe_display = MeshWireframeDisplay.new(self)
 	if enable_print_debug:
 		print("Gizmo25D setup complete.")
 
@@ -201,8 +200,10 @@ func _distance_to_segment_at_index(index: int, point: Vector2) -> float:
 	var projection: Vector2 = t * segment_end
 	if enable_print_debug:
 		print(
-			"Distance to segment at index %d: %f"
-			% [index, point.distance_to(projection)]
+			(
+				"Distance to segment at index %d: %f"
+				% [index, point.distance_to(projection)]
+			)
 		)
 	return point.distance_to(projection)
 

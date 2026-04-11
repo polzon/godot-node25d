@@ -12,10 +12,9 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface # Set in node25d_plugin.gd
+var editor_interface: EditorInterface  # Set in node25d_plugin.gd
 var moving: bool = false
 var zoom: float = 1.0
-
 
 var _view_mode_changed_this_frame: bool = false
 
