@@ -19,12 +19,17 @@ enum ViewMode {
 	FRONT_SIDE,
 	OBLIQUE_Y,
 	OBLIQUE_Z,
+	DEGREES_25,
 }
 
 ## Equal axis for 45 degree angles, used in some of the view modes.
 const INV_SQRT_2: float = 0.70710678118
 ## Cosine of 30 degrees, used for the isometric view mode basis.
 const HALF_SQRT_3: float = 0.86602540378
+## sin(atan(1/2)) = 1/sqrt(5), depth foreshortening for the 25-degree view mode.
+const INV_SQRT_5: float = 0.44721359549
+## cos(atan(1/2)) = 2/sqrt(5), height foreshortening for the 25-degree view.
+const TWO_INV_SQRT_5: float = 0.89442719099
 
 ## Exported spatial position for editor usage.
 @export var spatial_position: Vector3:
@@ -136,10 +141,17 @@ func set_view_mode(new_view_mode: ViewMode) -> void:
 			_basis_z = unit_scale * Vector2(-INV_SQRT_2, INV_SQRT_2)
 
 		# Top Down
-		ViewMode.TOP_DOWN, _:
+		ViewMode.TOP_DOWN:
 			_basis_x = unit_scale * Vector2(1, 0)
 			_basis_y = unit_scale * Vector2(0, 0)
 			_basis_z = unit_scale * Vector2(0, 1)
+
+		# 25 Degrees — atan(1/2) ≈ 26.565° direct view,
+		# classic 2:1 RPG tile ratio
+		ViewMode.DEGREES_25:
+			_basis_x = unit_scale * Vector2(1, 0)
+			_basis_y = unit_scale * Vector2(0, -TWO_INV_SQRT_5)
+			_basis_z = unit_scale * Vector2(0, INV_SQRT_5)
 
 
 func _get_configuration_warnings() -> PackedStringArray:

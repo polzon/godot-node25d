@@ -55,6 +55,11 @@ layout_mode = 2
 button_group = ExtResource("2")
 text = "Oblique Z"
 
+[node name="25Degree" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=2034648298]
+layout_mode = 2
+button_group = ExtResource("2")
+text = "25 Degree"
+
 [node name="Zoom" type="HBoxContainer" parent="TopBar" unique_id=1214157372]
 layout_mode = 2
 size_flags_horizontal = 3
