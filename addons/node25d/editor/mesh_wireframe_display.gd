@@ -17,7 +17,6 @@ var _collision_shape: CollisionShape3D
 
 var _gizmo_25d: Gizmo25D
 var _viewport_overlay: SubViewport
-var _viewport_25d: Viewport25D
 var _draw_host: Node2D
 
 
@@ -27,25 +26,27 @@ func _init(parent_gizmo_25d: Gizmo25D) -> void:
 		printerr("MeshWireframeDisplay requires a Gizmo25D to function.")
 		return
 
-	# This is getting a bit busy... Could probably use a refactor soon.
 	_node25d = _gizmo_25d.node_25d
 	_spatial_node = _gizmo_25d._spatial_node
 	_viewport_overlay = _gizmo_25d.get_parent() as SubViewport
-	_viewport_25d = _viewport_overlay.get_parent() as Viewport25D
+	if not _viewport_overlay:
+		printerr("MeshWireframeDisplay requires a SubViewport overlay.")
+		return
+	var viewport_25d := _viewport_overlay.get_parent() as Viewport25D
 	_collision_shape = _find_collision_shape(_node25d)
+
 	_draw_host = Node2D.new()
 	_draw_host.name = "MeshWireframeDrawHost"
 	_viewport_overlay.add_child(_draw_host)
-
 	if not _draw_host.draw.is_connected(_on_draw_requested):
 		_draw_host.draw.connect(_on_draw_requested)
 	if (
-		is_instance_valid(_viewport_25d)
-		and not _viewport_25d.view_mode_changed.is_connected(
+		viewport_25d
+		and not viewport_25d.view_mode_changed.is_connected(
 			_on_view_mode_changed
 		)
 	):
-		_viewport_25d.view_mode_changed.connect(_on_view_mode_changed)
+		viewport_25d.view_mode_changed.connect(_on_view_mode_changed)
 	if not _gizmo_25d.tree_exiting.is_connected(_on_gizmo_tree_exiting):
 		_gizmo_25d.tree_exiting.connect(_on_gizmo_tree_exiting)
 
@@ -57,8 +58,7 @@ func _on_view_mode_changed(_new_view_mode: int) -> void:
 
 func _on_draw_requested() -> void:
 	if (
-		not is_instance_valid(_gizmo_25d)
-		or not is_instance_valid(_node25d)
+		not is_instance_valid(_node25d)
 		or not is_instance_valid(_spatial_node)
 		or not is_instance_valid(_draw_host)
 	):
@@ -66,18 +66,16 @@ func _on_draw_requested() -> void:
 
 	if not is_instance_valid(_collision_shape):
 		_collision_shape = _find_collision_shape(_node25d)
-		if not _collision_shape:
-			return
 
-	var shape: Shape3D = _collision_shape.shape
-	if not shape:
-		return
-
-	var debug_mesh: ArrayMesh = shape.get_debug_mesh()
+	var debug_mesh: ArrayMesh = (
+		_collision_shape.shape.get_debug_mesh()
+		if is_instance_valid(_collision_shape) and _collision_shape.shape
+		else null
+	)
 	if not debug_mesh:
 		return
 
-	for surface_idx: int in range(debug_mesh.get_surface_count()):
+	for surface_idx: int in debug_mesh.get_surface_count():
 		_draw_surface_wireframe(debug_mesh, surface_idx)
 
 
@@ -86,7 +84,6 @@ func _draw_surface_wireframe(mesh: Mesh, surface_idx: int) -> void:
 	var arrays: Array = mesh.surface_get_arrays(surface_idx)
 	if (
 		arrays.size() <= Mesh.ARRAY_VERTEX
-		or arrays.is_empty()
 		or arrays[Mesh.ARRAY_VERTEX] is not PackedVector3Array
 	):
 		return
@@ -96,10 +93,11 @@ func _draw_surface_wireframe(mesh: Mesh, surface_idx: int) -> void:
 		return
 
 	var indices := PackedInt32Array()
-	if arrays.size() > Mesh.ARRAY_INDEX:
-		if arrays[Mesh.ARRAY_INDEX] is PackedInt32Array:
-			var surface_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-			indices = surface_indices
+	if (
+		arrays.size() > Mesh.ARRAY_INDEX
+		and arrays[Mesh.ARRAY_INDEX] is PackedInt32Array
+	):
+		indices = arrays[Mesh.ARRAY_INDEX]
 
 	if indices.is_empty():
 		for i: int in range(0, vertices.size() - 2, 3):
