@@ -41,13 +41,11 @@ func _ready() -> void:
 		view_mode_popup.id_pressed.connect(_on_view_mode_selected)
 	_sync_view_mode_controls(view_mode_index)
 
-	# Give Godot a chance to fully load the scene. Should take two frames.
-	const FRAMES_TO_WAIT = 2
-	for i: int in range(FRAMES_TO_WAIT):
-		await get_tree().process_frame
-
-	var scene_root: Node = get_tree().edited_scene_root if get_tree() else null
-	if not get_tree() or not scene_root:
+	const MAX_SCENE_ROOT_WAIT_FRAMES = 30
+	var scene_root := await _wait_for_edited_scene_root(
+		MAX_SCENE_ROOT_WAIT_FRAMES
+	)
+	if not scene_root:
 		# Godot hasn't finished loading yet, so try loading the plugin again.
 		EditorInterface.set_plugin_enabled("node25d", false)
 		EditorInterface.set_plugin_enabled("node25d", true)
@@ -73,6 +71,21 @@ func _process(_delta: float) -> void:
 		set_process(false)
 	else:
 		_handle_viewport_input()
+
+
+func _wait_for_edited_scene_root(max_wait_frames: int) -> Node:
+	for _frame_idx: int in range(max_wait_frames):
+		var current_tree: SceneTree = get_tree()
+		if current_tree == null:
+			return null
+
+		var edited_scene_root: Node = current_tree.edited_scene_root
+		if edited_scene_root != null:
+			return edited_scene_root
+
+		await current_tree.process_frame
+
+	return null
 
 
 func _handle_viewport_input() -> void:
