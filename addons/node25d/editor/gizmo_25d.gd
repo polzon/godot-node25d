@@ -13,7 +13,7 @@ const ROUGHLY_ROUND_TO_PIXELS = true
 ## Fallback unit scale if we cannot get a valid value from [member node_25d].
 const DEFAULT_UNIT_SCALE: float = 32.0
 
-@export var enable_print_debug: bool = false:
+var enable_print_debug: bool:
 	get = is_editor_debug_setting_enabled
 
 # Input from Viewport25D, represents if the mouse is clicked.
@@ -103,7 +103,7 @@ func determine_dominant_axis(mouse_position: Vector2) -> void:
 	var closest_distance := DEADZONE_RADIUS
 	_dominant_axis = -1
 	for i in range(3):
-		_lines[i].modulate.a = 0.8  # Unrelated, but needs a loop too.
+		_lines[i].modulate.a = 0.8 # Unrelated, but needs a loop too.
 		var distance := _distance_to_segment_at_index(i, mouse_position)
 		if distance < closest_distance:
 			closest_distance = distance
@@ -150,7 +150,7 @@ func setup(in_node_25d: Node25D) -> void:
 		_lines[i].points[1] = basis[i] * 3
 	global_position = node_25d.global_position
 	_spatial_node = node_25d.get_child(0)
-	_mesh_wireframe_display = MeshWireframeDisplay.new(self)
+	_mesh_wireframe_display = MeshWireframeDisplay.new(self )
 	if enable_print_debug:
 		print("Gizmo25D setup complete.")
 
@@ -209,13 +209,6 @@ func _distance_to_segment_at_index(index: int, point: Vector2) -> float:
 
 
 static func is_editor_debug_setting_enabled() -> bool:
-	var editor_settings := EditorInterface.get_editor_settings()
-	const SETTING_PATH := "node25d/gizmo25d/enable_print_debug"
-
-	if editor_settings:
-		if editor_settings.has_setting(SETTING_PATH):
-			return editor_settings.get_setting(SETTING_PATH)
-		editor_settings.set_setting(SETTING_PATH, false)
-		editor_settings.set_initial_value(SETTING_PATH, false, true)
-		print("Debug setting not found, created with default value false.")
-	return false
+	return Node25DPlugin.get_editor_setting(
+		"gizmo25d", "enable_print_debug", false
+	)

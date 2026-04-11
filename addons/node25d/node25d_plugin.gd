@@ -1,10 +1,13 @@
 @tool
+class_name Node25DPlugin
 extends EditorPlugin
 
 # TODO: Clean this up, I really don't like these hard-coded paths.
 #       However I've been having even more issues with UIDs as well...
 const PATH_PREFIX := "res://addons/node25d/"
 const MAIN_SCREEN_TSCN_PATH := PATH_PREFIX + "editor/main_screen_25d.tscn"
+
+const EDITOR_SETTINGS_PREFIX := "node25d"
 
 const MainPanel: PackedScene = preload(MAIN_SCREEN_TSCN_PATH)
 
@@ -111,3 +114,19 @@ func _handles(obj: Object) -> bool:
 			)
 		)
 	return false
+
+
+static func get_editor_setting(
+	category_name: String, setting_name: String, default_value: Variant
+) -> Variant:
+	var editor_settings := EditorInterface.get_editor_settings()
+	var full_setting_path := (
+		("%s/%s/%s" % [EDITOR_SETTINGS_PREFIX, category_name, setting_name])
+		.simplify_path()
+	)
+	if not editor_settings.has_setting(full_setting_path):
+		editor_settings.set_setting(full_setting_path, default_value)
+		editor_settings.set_initial_value(
+			full_setting_path, default_value, false
+		)
+	return editor_settings.get_setting(full_setting_path)

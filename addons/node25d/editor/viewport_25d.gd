@@ -4,7 +4,8 @@ extends Control
 
 static var _debug_failed_find_attempts: int = 0
 
-@export var enable_print_debug: bool = true
+var enable_print_debug: bool:
+	get = is_editor_debug_setting_enabled
 
 var zoom_level: int = 0
 var is_panning: bool = false
@@ -12,7 +13,7 @@ var pan_center: Vector2
 var viewport_center: Vector2
 var view_mode_index: int = 0
 
-var editor_interface: EditorInterface  # Set in node25d_plugin.gd
+var editor_interface: EditorInterface # Set in node25d_plugin.gd
 var moving: bool = false
 var zoom: float = 1.0
 
@@ -240,3 +241,9 @@ func _on_ZoomIn_pressed() -> void:
 
 func _on_ZoomReset_pressed() -> void:
 	zoom_level = 0
+
+
+static func is_editor_debug_setting_enabled() -> bool:
+	return Node25DPlugin.get_editor_setting(
+		"viewport_25d", "enable_print_debug", false
+	)
