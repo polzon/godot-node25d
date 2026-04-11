@@ -1,7 +1,8 @@
 [gd_scene format=3 uid="uid://cghhpfyixmwoh"]
 
 [ext_resource type="Script" uid="uid://ps437rdu8x6r" path="res://addons/node25d/editor/viewport_25d.gd" id="1"]
-[ext_resource type="ButtonGroup" uid="uid://bp2vfx1wfs2w" path="res://addons/node25d/editor/view_mode_button_group.tres" id="2"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_qimvl"]
 
 [sub_resource type="ViewportTexture" id="1"]
 viewport_path = NodePath("Viewport25D/Viewport2D")
@@ -15,60 +16,57 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+metadata/_edit_lock_ = true
 
 [node name="TopBar" type="HBoxContainer" parent="." unique_id=1161338108]
 layout_mode = 2
 size_flags_horizontal = 3
+metadata/_edit_lock_ = true
 
-[node name="ViewModeButtons" type="HBoxContainer" parent="TopBar" unique_id=8482991]
+[node name="EditorTools" type="HBoxContainer" parent="TopBar" unique_id=1423363739]
+layout_mode = 2
+
+[node name="ViewModeMenu" type="MenuButton" parent="TopBar/EditorTools" unique_id=1121625336]
+unique_name_in_owner = true
+layout_mode = 2
+button_group = SubResource("ButtonGroup_qimvl")
+text = "View Mode"
+item_count = 8
+popup/item_0/text = "45 Degrees"
+popup/item_0/checkable = 2
+popup/item_0/checked = true
+popup/item_0/id = 0
+popup/item_1/text = "Isometric"
+popup/item_1/checkable = 2
+popup/item_1/id = 1
+popup/item_2/text = "Top Down"
+popup/item_2/checkable = 2
+popup/item_2/id = 2
+popup/item_3/text = "Front Side"
+popup/item_3/checkable = 2
+popup/item_3/id = 3
+popup/item_4/text = "Oblique Y"
+popup/item_4/checkable = 2
+popup/item_4/id = 4
+popup/item_5/text = "Oblique Z"
+popup/item_5/checkable = 2
+popup/item_5/id = 5
+popup/item_6/text = "25 Degrees"
+popup/item_6/checkable = 2
+popup/item_6/id = 6
+popup/item_7/text = "Oblique RPG"
+popup/item_7/checkable = 2
+popup/item_7/id = 7
+metadata/_edit_group_ = true
+
+[node name="Spacer" type="Control" parent="TopBar" unique_id=500785779]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="45Degree" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=1459804842]
-layout_mode = 2
-button_pressed = true
-button_group = ExtResource("2")
-text = "45 Degree"
-
-[node name="Isometric" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=602193763]
-layout_mode = 2
-button_group = ExtResource("2")
-text = "Isometric"
-
-[node name="TopDown" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=1003502249]
-layout_mode = 2
-button_group = ExtResource("2")
-text = "Top Down"
-
-[node name="FrontSide" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=850987602]
-layout_mode = 2
-button_group = ExtResource("2")
-text = "Front Side"
-
-[node name="ObliqueY" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=123015100]
-layout_mode = 2
-button_group = ExtResource("2")
-text = "Oblique Y"
-
-[node name="ObliqueZ" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=1782929800]
-layout_mode = 2
-button_group = ExtResource("2")
-text = "Oblique Z"
-
-[node name="25Degree" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=2034648298]
-layout_mode = 2
-button_group = ExtResource("2")
-text = "25 Degree"
-
-[node name="ObliqueRPG" type="CheckBox" parent="TopBar/ViewModeButtons" unique_id=1010909422]
-layout_mode = 2
-button_group = ExtResource("2")
-text = "Oblique RPG"
 
 [node name="Zoom" type="HBoxContainer" parent="TopBar" unique_id=1214157372]
 layout_mode = 2
-size_flags_horizontal = 3
 alignment = 2
+metadata/_edit_group_ = true
 
 [node name="ZoomOut" type="Button" parent="TopBar/Zoom" unique_id=907332067]
 custom_minimum_size = Vector2(32, 2.08165e-12)
@@ -76,6 +74,7 @@ layout_mode = 2
 text = "-"
 
 [node name="ZoomPercent" type="Label" parent="TopBar/Zoom" unique_id=353048060]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 text = "100%"
@@ -92,9 +91,6 @@ custom_minimum_size = Vector2(32, 2.08165e-12)
 layout_mode = 2
 text = "+"
 
-[node name="Spacer" type="Control" parent="TopBar/Zoom" unique_id=1430330369]
-layout_mode = 2
-
 [node name="Viewport25D" type="Control" parent="." unique_id=1915625833]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -102,13 +98,17 @@ size_flags_vertical = 3
 mouse_filter = 1
 script = ExtResource("1")
 metadata/_custom_type_script = "uid://ps437rdu8x6r"
+metadata/_edit_lock_ = true
+metadata/_edit_group_ = true
 
 [node name="Viewport2D" type="SubViewport" parent="Viewport25D" unique_id=2028696063]
+unique_name_in_owner = true
 disable_3d = true
 transparent_bg = true
 size = Vector2i(1600, 864)
 
 [node name="ViewportOverlay" type="SubViewport" parent="Viewport25D" unique_id=1928496887]
+unique_name_in_owner = true
 disable_3d = true
 transparent_bg = true
 size = Vector2i(1600, 864)
@@ -119,12 +119,17 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 texture = SubResource("1")
 expand_mode = 1
+metadata/_edit_lock_ = true
 
 [node name="Overlay" type="TextureRect" parent="Viewport25D/ViewportTexture" unique_id=519080409]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 texture = SubResource("2")
+metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="TopBar/Zoom/ZoomOut" to="Viewport25D" method="_on_ZoomOut_pressed"]
 [connection signal="pressed" from="TopBar/Zoom/ZoomPercent/ZoomReset" to="Viewport25D" method="_on_ZoomReset_pressed"]

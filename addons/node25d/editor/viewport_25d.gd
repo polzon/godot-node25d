@@ -22,18 +22,21 @@ var zoom: float = 1.0
 
 var _view_mode_changed_this_frame: bool = false
 
-@onready var viewport_2d: SubViewport = $Viewport2D
-@onready var viewport_overlay: SubViewport = $ViewportOverlay
-# TODO: This can be cleaned up.
-@onready var view_mode_button_group: ButtonGroup = (
-	($"../TopBar/ViewModeButtons/45Degree" as BaseButton).button_group
-)
-@onready var zoom_label: Label = $"../TopBar/Zoom/ZoomPercent"
+@onready var viewport_2d: SubViewport = %Viewport2D
+@onready var viewport_overlay: SubViewport = %ViewportOverlay
+
+@onready var view_mode_menu_button: MenuButton = %ViewModeMenu
+@onready var view_mode_popup: PopupMenu = view_mode_menu_button.get_popup()
+
+@onready var zoom_label: Label = %ZoomPercent
 @onready var gizmo_25d_scene := preload(Gizmo25D.GIZMO_25D_TSCN_PATH)
 
 
 func _ready() -> void:
 	assert(is_inside_tree(), "ready() is called but not inside tree?")
+	if not view_mode_popup.id_pressed.is_connected(_on_view_mode_selected):
+		view_mode_popup.id_pressed.connect(_on_view_mode_selected)
+	_sync_view_mode_controls(view_mode_index)
 
 	# Give Godot a chance to fully load the scene. Should take two frames.
 	const FRAMES_TO_WAIT = 2
@@ -70,19 +73,7 @@ func _process(_delta: float) -> void:
 
 
 func _handle_viewport_input() -> void:
-	# View mode polling.
 	_view_mode_changed_this_frame = false
-	var new_view_mode := -1
-
-	# When a view mode option is changed in the viewport.
-	if view_mode_button_group.get_pressed_button():
-		new_view_mode = view_mode_button_group.get_pressed_button().get_index()
-	if view_mode_index != new_view_mode:
-		view_mode_index = new_view_mode
-		_view_mode_changed_this_frame = true
-		var scene_root: Node = get_tree().edited_scene_root
-		assert(scene_root, "Scene root is null. This should never happen.")
-		_recursive_change_view_mode(scene_root)
 
 	# Zooming.
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_WHEEL_UP):
@@ -107,6 +98,33 @@ func _handle_viewport_input() -> void:
 	viewport_overlay.canvas_transform = viewport_trans
 
 	_update_gizmos()
+
+
+func _on_view_mode_selected(item_id: int) -> void:
+	_apply_view_mode(item_id)
+
+
+func _apply_view_mode(new_view_mode: int) -> void:
+	if new_view_mode < 0 or view_mode_index == new_view_mode:
+		return
+
+	view_mode_index = new_view_mode
+	_view_mode_changed_this_frame = true
+	_sync_view_mode_controls(view_mode_index)
+	if enable_print_debug:
+		print("View mode changed to index: ", view_mode_index)
+
+	var scene_root: Node = get_tree().edited_scene_root
+	assert(scene_root, "Scene root is null. This should never happen.")
+	_recursive_change_view_mode(scene_root)
+
+
+func _sync_view_mode_controls(selected_index: int) -> void:
+	for item_index: int in range(view_mode_popup.item_count):
+		view_mode_popup.set_item_checked(
+			item_index,
+			view_mode_popup.get_item_id(item_index) == selected_index
+		)
 
 
 func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Gizmo25D]) -> void:
@@ -149,7 +167,7 @@ func _gui_input(input_event: InputEvent) -> void:
 						)
 					gizmo.wants_to_move = true
 					accept_event()
-				else:
+				elif enable_print_debug:
 					push_warning("Failed to find gizmo node.")
 
 		elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
