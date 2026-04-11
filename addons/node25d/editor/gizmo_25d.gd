@@ -44,7 +44,8 @@ var _mesh_wireframe_display: MeshWireframeDisplay
 
 # Used to control the state of movement.
 var _moving: bool = false
-var _start_mouse_position := Vector2.ZERO
+var _start_mouse_position_viewport := Vector2.ZERO
+var _drag_axis_unit_vector_viewport := Vector2.ZERO
 var _start_spatial_origin := Vector3.ZERO
 var _missing_axis_logged_for_click: bool = false
 
@@ -81,10 +82,10 @@ func _process(_delta: float) -> void:
 
 	# Finally, move the gizmo.
 	if not _moving:
-		_begin_move(mouse_position)
+		_begin_move()
 
 	# By this point, we are moving.
-	move_using_mouse(mouse_position)
+	move_using_mouse()
 	if debug_print_axis_dominance:
 		print("Moving gizmo along axis %d." % _dominant_axis)
 
@@ -107,13 +108,15 @@ func _is_setup_valid() -> bool:
 
 
 func _get_mouse_position_local() -> Vector2:
-	var mouse_position_overlay: Vector2 = (
-		_viewport_25d.get_last_mouse_position_viewport()
-	)
+	var mouse_position_viewport: Vector2 = _get_mouse_position_viewport()
 	var full_transform: Transform2D = (
 		_viewport_overlay.canvas_transform * global_transform
 	)
-	return full_transform.affine_inverse() * mouse_position_overlay
+	return full_transform.affine_inverse() * mouse_position_viewport
+
+
+func _get_mouse_position_viewport() -> Vector2:
+	return _viewport_25d.get_last_mouse_position_viewport()
 
 
 func _log_missing_axis(mouse_position: Vector2) -> void:
@@ -129,15 +132,21 @@ func _log_missing_axis(mouse_position: Vector2) -> void:
 		_missing_axis_logged_for_click = true
 
 
-func _begin_move(mouse_position: Vector2) -> void:
+func _begin_move() -> void:
 	_moving = true
-	_start_mouse_position = mouse_position
+	_start_mouse_position_viewport = _get_mouse_position_viewport()
+	_drag_axis_unit_vector_viewport = (
+		_viewport_overlay
+		. canvas_transform
+		. basis_xform(node_25d.get_basis()[_dominant_axis])
+	)
 	_start_spatial_origin = _spatial_node.transform.origin
 	if debug_print_mouse_movement:
 		print("Started moving gizmo.")
 
 
 func _finish_move() -> void:
+	_snap_spatial_position()
 	node_25d.notify_property_list_changed()
 	_moving = false
 	if debug_print_mouse_movement:
@@ -155,26 +164,28 @@ func determine_dominant_axis(mouse_position: Vector2) -> void:
 			_dominant_axis = i
 
 
-func move_using_mouse(mouse_position: Vector2) -> void:
+func move_using_mouse() -> void:
 	# Change modulate of unselected axes.
 	_lines[(_dominant_axis + 1) % 3].modulate.a = 0.5
 	_lines[(_dominant_axis + 2) % 3].modulate.a = 0.5
 
 	# Calculate movement.
-	var mouse_diff: Vector2 = mouse_position - _start_mouse_position
-	var line_end_point: Vector2 = _lines[_dominant_axis].points[1]
-	var projected_diff: Vector2 = mouse_diff.project(line_end_point)
-	var movement: float = (
-		projected_diff.length() * global_scale.x / get_unit_scale()
+	var current_mouse_viewport: Vector2 = _get_mouse_position_viewport()
+	var mouse_diff: Vector2 = (
+		current_mouse_viewport - _start_mouse_position_viewport
 	)
-	if is_equal_approx(PI, projected_diff.angle_to(line_end_point)):
-		movement *= -1
+	var axis_len_sq: float = _drag_axis_unit_vector_viewport.length_squared()
+	if is_zero_approx(axis_len_sq):
+		return
+	var movement: float = (
+		mouse_diff.dot(_drag_axis_unit_vector_viewport) / axis_len_sq
+	)
+	var projected_diff: Vector2 = _drag_axis_unit_vector_viewport * movement
 
 	# Apply movement.
-	var move_dir_3d: Vector3 = _spatial_node.transform.basis[_dominant_axis]
-	_spatial_node.transform.origin = (
-		_start_spatial_origin + move_dir_3d * movement
-	)
+	var new_origin: Vector3 = _start_spatial_origin
+	new_origin[_dominant_axis] += movement
+	_spatial_node.transform.origin = new_origin
 	if debug_print_mouse_movement:
 		print(
 			"Mouse diff: ",
@@ -184,7 +195,6 @@ func move_using_mouse(mouse_position: Vector2) -> void:
 			" Movement: ",
 			movement
 		)
-	_snap_spatial_position()
 	if _mesh_wireframe_display:
 		_mesh_wireframe_display.request_redraw()
 
