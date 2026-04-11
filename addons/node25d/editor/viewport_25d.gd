@@ -21,6 +21,7 @@ var view_mode_index: int = 0
 var editor_interface: EditorInterface  # Set in node25d_plugin.gd
 var moving: bool = false
 var zoom: float = 1.0
+var _last_mouse_position_viewport: Vector2 = Vector2.ZERO
 
 var _view_mode_changed_this_frame: bool = false
 
@@ -76,6 +77,7 @@ func _process(_delta: float) -> void:
 
 func _handle_viewport_input() -> void:
 	_view_mode_changed_this_frame = false
+	_last_mouse_position_viewport = get_local_mouse_position()
 
 	# Zooming.
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_WHEEL_UP):
@@ -141,24 +143,34 @@ func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Gizmo25D]) -> void:
 
 
 # This only accepts input when the mouse is inside of the 2.5D viewport.
-func _gui_input(input_event: InputEvent) -> void:
+func _input(input_event: InputEvent) -> void:
+	if not (
+		input_event is InputEventMouseButton
+		or input_event is InputEventMouseMotion
+	):
+		return
+
+	if not get_global_rect().has_point(get_global_mouse_position()):
+		return
+
 	if input_event is InputEventMouseButton:
 		var mouse_event := input_event as InputEventMouseButton
+		_last_mouse_position_viewport = mouse_event.position
 		if mouse_event.is_pressed():
 			if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
 				zoom_level += 1
-				accept_event()
+				get_viewport().set_input_as_handled()
 
 			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				zoom_level -= 1
-				accept_event()
+				get_viewport().set_input_as_handled()
 
 			elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
 				is_panning = true
 				pan_center = (
 					viewport_center - mouse_event.position / _get_zoom_amount()
 				)
-				accept_event()
+				get_viewport().set_input_as_handled()
 
 			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 				var gizmo := _get_first_gizmo_child_node()
@@ -169,7 +181,7 @@ func _gui_input(input_event: InputEvent) -> void:
 							gizmo._dominant_axis
 						)
 					gizmo.wants_to_move = true
-					accept_event()
+					get_viewport().set_input_as_handled()
 				elif enable_print_debug:
 					push_warning("Failed to find gizmo node.")
 
@@ -177,7 +189,7 @@ func _gui_input(input_event: InputEvent) -> void:
 			is_panning = false
 			if enable_print_debug:
 				print("Stopped panning viewport.")
-			accept_event()
+			get_viewport().set_input_as_handled()
 
 		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 			var gizmo := _get_first_gizmo_child_node()
@@ -185,17 +197,22 @@ func _gui_input(input_event: InputEvent) -> void:
 				gizmo.wants_to_move = false
 				if enable_print_debug:
 					print("No longer wants to move gizmo.")
-				accept_event()
+				get_viewport().set_input_as_handled()
 
 	elif input_event is InputEventMouseMotion:
 		var motion_event := input_event as InputEventMouseMotion
+		_last_mouse_position_viewport = motion_event.position
 		if is_panning:
 			viewport_center = (
 				pan_center + motion_event.position / _get_zoom_amount()
 			)
 			if enable_print_debug:
 				print("Panning viewport to center:", viewport_center)
-			accept_event()
+			get_viewport().set_input_as_handled()
+
+
+func get_last_mouse_position_viewport() -> Vector2:
+	return _last_mouse_position_viewport
 
 
 func _recursive_change_view_mode(current_node: Node) -> void:

@@ -7,9 +7,6 @@ const GIZMO_25D_TSCN_PATH := "res://addons/node25d/editor/gizmo_25d.tscn"
 # If the mouse is farther than this many pixels, it won't grab anything.
 const DEADZONE_RADIUS = 20.0
 const DEADZONE_RADIUS_SQ = DEADZONE_RADIUS * DEADZONE_RADIUS
-# Not pixel perfect for all axes in all modes, but works well enough.
-# Rounding is not done until after the movement is finished.
-const ROUGHLY_ROUND_TO_PIXELS = true
 ## Fallback unit scale if we cannot get a valid value from [member node_25d].
 const DEFAULT_UNIT_SCALE: float = 32.0
 
@@ -49,74 +46,102 @@ var _mesh_wireframe_display: MeshWireframeDisplay
 var _moving: bool = false
 var _start_mouse_position := Vector2.ZERO
 var _start_spatial_origin := Vector3.ZERO
+var _missing_axis_logged_for_click: bool = false
 
 # Stores state of closest or currently used axis.
 var _dominant_axis: int = -1
 
 @onready var _lines: Array[Line2D] = [$X, $Y, $Z]
-@onready var _viewport_overlay: SubViewport = get_parent()
-# ! Not sure if this is the correct node?
-@onready var _viewport_25d_bg: SubViewport = (
-	_viewport_overlay.get_parent().get_child(1) as SubViewport
-)
+@onready var _viewport_overlay: SubViewport = get_parent() as SubViewport
+@onready
+var _viewport_25d: Viewport25D = _viewport_overlay.get_parent() as Viewport25D
 
 
 func _process(_delta: float) -> void:
-	if not _lines:
-		# Somehow this node hasn't been set up yet.
-		if debug_print_setup:
-			push_warning("Lines not set up yet.")
-		return
-
-	if not node_25d or not _viewport_25d_bg:
-		assert(node_25d, "Gizmo25D is missing node_25d.")
-		assert(_viewport_25d_bg, "Gizmo25D is missing _viewport_25d_bg.")
-		if debug_print_setup:
-			push_warning("Node25D or viewport not set up yet.")
+	if not _is_setup_valid():
 		return
 
 	global_position = node_25d.global_position
-
-	# While getting the mouse position works in any viewport, it doesn't do
-	# anything significant unless the mouse is in the 2.5D viewport.
-	var mouse_position: Vector2 = _viewport_25d_bg.get_mouse_position()
-	var full_transform: Transform2D = (
-		_viewport_overlay.canvas_transform * global_transform
-	)
-	mouse_position = full_transform.affine_inverse() * mouse_position
+	var mouse_position: Vector2 = _get_mouse_position_local()
 	if not _moving:
 		determine_dominant_axis(mouse_position)
 		if _dominant_axis == -1:
-			if debug_print_axis_dominance:
-				push_warning("Not hovering over any axis.")
+			_log_missing_axis(mouse_position)
 			# If we're not hovering over a line, nothing to do.
 			return
-		if debug_print_axis_dominance:
-			print("Hovering over axis %d." % _dominant_axis)
+		_missing_axis_logged_for_click = false
 	_lines[_dominant_axis].modulate.a = 1
 
 	# When we've stopped moving the gizmo.
 	if not wants_to_move:
+		_missing_axis_logged_for_click = false
 		if _moving:
-			# When we're done moving, ensure the inspector is updated.
-			node_25d.notify_property_list_changed()
-			_moving = false
-			if debug_print_mouse_movement:
-				print("Stopped moving gizmo.")
+			_finish_move()
 		return
 
 	# Finally, move the gizmo.
 	if not _moving:
-		_moving = true
-		_start_mouse_position = mouse_position
-		_start_spatial_origin = _spatial_node.transform.origin
-		if debug_print_mouse_movement:
-			print("Started moving gizmo.")
+		_begin_move(mouse_position)
 
 	# By this point, we are moving.
 	move_using_mouse(mouse_position)
 	if debug_print_axis_dominance:
 		print("Moving gizmo along axis %d." % _dominant_axis)
+
+
+func _is_setup_valid() -> bool:
+	if not _lines:
+		if debug_print_setup:
+			push_warning("Lines not set up yet.")
+		return false
+
+	if not node_25d or not _viewport_overlay or not _viewport_25d:
+		assert(node_25d, "Gizmo25D is missing node_25d.")
+		assert(_viewport_overlay, "Gizmo25D is missing _viewport_overlay.")
+		assert(_viewport_25d, "Gizmo25D is missing _viewport_25d.")
+		if debug_print_setup:
+			push_warning("Node25D or viewport not set up yet.")
+		return false
+
+	return true
+
+
+func _get_mouse_position_local() -> Vector2:
+	var mouse_position_overlay: Vector2 = (
+		_viewport_25d.get_last_mouse_position_viewport()
+	)
+	var full_transform: Transform2D = (
+		_viewport_overlay.canvas_transform * global_transform
+	)
+	return full_transform.affine_inverse() * mouse_position_overlay
+
+
+func _log_missing_axis(mouse_position: Vector2) -> void:
+	if (
+		wants_to_move
+		and debug_print_axis_dominance
+		and not _missing_axis_logged_for_click
+	):
+		print(
+			"Failed to find a dominant axis on click. Mouse position: ",
+			mouse_position
+		)
+		_missing_axis_logged_for_click = true
+
+
+func _begin_move(mouse_position: Vector2) -> void:
+	_moving = true
+	_start_mouse_position = mouse_position
+	_start_spatial_origin = _spatial_node.transform.origin
+	if debug_print_mouse_movement:
+		print("Started moving gizmo.")
+
+
+func _finish_move() -> void:
+	node_25d.notify_property_list_changed()
+	_moving = false
+	if debug_print_mouse_movement:
+		print("Stopped moving gizmo.")
 
 
 func determine_dominant_axis(mouse_position: Vector2) -> void:
@@ -128,10 +153,6 @@ func determine_dominant_axis(mouse_position: Vector2) -> void:
 		if distance < closest_distance:
 			closest_distance = distance
 			_dominant_axis = i
-	if debug_print_axis_dominance and _dominant_axis == -1:
-		printerr(
-			"Failed to find a dominant axis. Mouse position: ", mouse_position
-		)
 
 
 func move_using_mouse(mouse_position: Vector2) -> void:
@@ -216,11 +237,11 @@ func _distance_to_segment_at_index(index: int, point: Vector2) -> float:
 
 	var segment_end: Vector2 = _lines[index].points[1]
 	var length_squared := segment_end.length_squared()
-	if length_squared < DEADZONE_RADIUS_SQ:
+	# Axis line points are in local gizmo units, not pixels. Only reject a
+	# degenerate segment to avoid incorrectly disabling all axis selection.
+	if is_zero_approx(length_squared):
 		if debug_print_line_points:
-			push_warning(
-				"Line segment at index %d is too short to interact." % index
-			)
+			push_warning("Line segment at index %d has zero length." % index)
 		if debug_print_line_points:
 			print(
 				"Distance to segment at index %d: %f" % [index, point.length()]
