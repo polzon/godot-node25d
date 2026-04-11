@@ -13,7 +13,8 @@ const ROUGHLY_ROUND_TO_PIXELS = true
 ## Fallback unit scale if we cannot get a valid value from [member node_25d].
 const DEFAULT_UNIT_SCALE: float = 32.0
 
-@export var enable_print_debug: bool = false
+@export var enable_print_debug: bool = false:
+	get = is_editor_debug_setting_enabled
 
 # Input from Viewport25D, represents if the mouse is clicked.
 var wants_to_move: bool = false
@@ -204,3 +205,16 @@ func _distance_to_segment_at_index(index: int, point: Vector2) -> float:
 			% [index, point.distance_to(projection)]
 		)
 	return point.distance_to(projection)
+
+
+static func is_editor_debug_setting_enabled() -> bool:
+	var editor_settings := EditorInterface.get_editor_settings()
+	const SETTING_PATH := "node25d/gizmo25d/enable_print_debug"
+
+	if editor_settings:
+		if editor_settings.has_setting(SETTING_PATH):
+			return editor_settings.get_setting(SETTING_PATH)
+		editor_settings.set_setting(SETTING_PATH, false)
+		editor_settings.set_initial_value(SETTING_PATH, false, true)
+		print("Debug setting not found, created with default value false.")
+	return false
