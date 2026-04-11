@@ -56,6 +56,11 @@ func _on_view_mode_changed(_new_view_mode: int) -> void:
 		_draw_host.queue_redraw()
 
 
+func request_redraw() -> void:
+	if is_instance_valid(_draw_host):
+		_draw_host.queue_redraw()
+
+
 func _on_draw_requested() -> void:
 	if (
 		not is_instance_valid(_node25d)

@@ -185,6 +185,8 @@ func move_using_mouse(mouse_position: Vector2) -> void:
 			movement
 		)
 	_snap_spatial_position()
+	if _mesh_wireframe_display:
+		_mesh_wireframe_display.request_redraw()
 
 	# Move the gizmo appropriately.
 	global_position = node_25d.global_position

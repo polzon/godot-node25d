@@ -149,14 +149,21 @@ func _input(input_event: InputEvent) -> void:
 		or input_event is InputEventMouseMotion
 	):
 		return
+	if not is_visible_in_tree():
+		return
 
-	if not get_global_rect().has_point(get_global_mouse_position()):
+	var mouse_inside: bool = get_global_rect().has_point(
+		get_global_mouse_position()
+	)
+	if not mouse_inside and not _has_active_pointer_interaction():
 		return
 
 	if input_event is InputEventMouseButton:
 		var mouse_event := input_event as InputEventMouseButton
 		_last_mouse_position_viewport = mouse_event.position
 		if mouse_event.is_pressed():
+			if not mouse_inside:
+				return
 			if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
 				zoom_level += 1
 				get_viewport().set_input_as_handled()
@@ -192,12 +199,10 @@ func _input(input_event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
-			var gizmo := _get_first_gizmo_child_node()
-			if gizmo:
-				gizmo.wants_to_move = false
-				if enable_print_debug:
-					print("No longer wants to move gizmo.")
-				get_viewport().set_input_as_handled()
+			_set_all_gizmos_wants_to_move(false)
+			if enable_print_debug:
+				print("No longer wants to move gizmo.")
+			get_viewport().set_input_as_handled()
 
 	elif input_event is InputEventMouseMotion:
 		var motion_event := input_event as InputEventMouseMotion
@@ -209,6 +214,25 @@ func _input(input_event: InputEvent) -> void:
 			if enable_print_debug:
 				print("Panning viewport to center:", viewport_center)
 			get_viewport().set_input_as_handled()
+
+
+func _has_active_pointer_interaction() -> bool:
+	if is_panning:
+		return true
+
+	for overlay_child: Node in viewport_overlay.get_children():
+		if overlay_child is Gizmo25D:
+			var gizmo := overlay_child as Gizmo25D
+			if gizmo.wants_to_move:
+				return true
+
+	return false
+
+
+func _set_all_gizmos_wants_to_move(value: bool) -> void:
+	for overlay_child: Node in viewport_overlay.get_children():
+		if overlay_child is Gizmo25D:
+			(overlay_child as Gizmo25D).wants_to_move = value
 
 
 func get_last_mouse_position_viewport() -> Vector2:
