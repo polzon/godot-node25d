@@ -154,11 +154,12 @@ func set_view_mode(new_view_mode: ViewMode) -> void:
 			_basis_y = unit_scale * Vector2(0, -TWO_INV_SQRT_5)
 			_basis_z = unit_scale * Vector2(0, INV_SQRT_5)
 
-		# RPG Oblique — ground is top-down, walls project straight up at 0.5x
+		# RPG Oblique — ground is top-down, walls project straight up at 0.75x
 		# height (classic GBC/NES RPG look, e.g. Pokémon Red/Blue)
+		# Other viable values are 0.5, 0.625, 0.75, or 0.875.
 		ViewMode.RPG_OBLIQUE:
 			_basis_x = unit_scale * Vector2(1, 0)
-			_basis_y = unit_scale * Vector2(0, -0.5)
+			_basis_y = unit_scale * Vector2(0, -0.75)
 			_basis_z = unit_scale * Vector2(0, 1)
 
 
