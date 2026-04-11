@@ -2,6 +2,10 @@
 class_name Viewport25D
 extends Control
 
+static var _debug_failed_find_attempts: int = 0
+
+@export var enable_print_debug: bool = true
+
 var zoom_level: int = 0
 var is_panning: bool = false
 var pan_center: Vector2
@@ -10,6 +14,10 @@ var view_mode_index: int = 0
 
 var editor_interface: EditorInterface # Set in node25d_plugin.gd
 var moving: bool = false
+var zoom: float = 1.0
+
+
+var _view_mode_changed_this_frame: bool = false
 
 @onready var viewport_2d: SubViewport = $Viewport2D
 @onready var viewport_overlay: SubViewport = $ViewportOverlay
@@ -25,21 +33,27 @@ func _ready() -> void:
 	assert(is_inside_tree(), "ready() is called but not inside tree?")
 
 	# Give Godot a chance to fully load the scene. Should take two frames.
-	for i: int in 5:
+	const FRAMES_TO_WAIT = 2
+	for i: int in range(FRAMES_TO_WAIT):
 		await get_tree().process_frame
 
-	var edited_scene_root: Node = (
-		get_tree().edited_scene_root if get_tree() else null
-	)
-	if not get_tree() or not edited_scene_root:
+	var scene_root: Node = get_tree().edited_scene_root if get_tree() else null
+	if not get_tree() or not scene_root:
 		# Godot hasn't finished loading yet, so try loading the plugin again.
 		EditorInterface.set_plugin_enabled("node25d", false)
 		EditorInterface.set_plugin_enabled("node25d", true)
+		if enable_print_debug:
+			_debug_failed_find_attempts += 1
+			push_warning(
+				"Failed to find edited scene root. ",
+				"Reloading plugin attempt #",
+				_debug_failed_find_attempts
+			)
 		return
 
 	var world_2d := EditorInterface.get_editor_viewport_2d().world_2d
 	if world_2d == get_viewport().world_2d:
-		# This is the MainScreen25D scene opened in the editor!
+		# If the MainScene2D tscn scene if open in the editor.
 		return
 	viewport_2d.world_2d = world_2d
 
@@ -54,22 +68,25 @@ func _process(_delta: float) -> void:
 
 func _handle_viewport_input() -> void:
 	# View mode polling.
-	var view_mode_changed_this_frame: bool = false
+	_view_mode_changed_this_frame = false
 	var new_view_mode := -1
 
+	# When a view mode option is changed in the viewport.
 	if view_mode_button_group.get_pressed_button():
 		new_view_mode = view_mode_button_group.get_pressed_button().get_index()
 	if view_mode_index != new_view_mode:
 		view_mode_index = new_view_mode
-		view_mode_changed_this_frame = true
-		_recursive_change_view_mode(get_tree().edited_scene_root)
+		_view_mode_changed_this_frame = true
+		var scene_root: Node = get_tree().edited_scene_root
+		assert(scene_root, "Scene root is null. This should never happen.")
+		_recursive_change_view_mode(scene_root)
 
 	# Zooming.
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_WHEEL_UP):
 		zoom_level += 1
 	elif Input.is_mouse_button_pressed(MOUSE_BUTTON_WHEEL_DOWN):
 		zoom_level -= 1
-	var zoom := _get_zoom_amount()
+	zoom = _get_zoom_amount()
 
 	# SubViewport size.
 	var vp_size := get_global_rect().size
@@ -86,32 +103,7 @@ func _handle_viewport_input() -> void:
 	viewport_2d.canvas_transform = viewport_trans
 	viewport_overlay.canvas_transform = viewport_trans
 
-	# Delete unused gizmos.
-	var selection := EditorInterface.get_selection().get_selected_nodes()
-	var gizmos: Array[Gizmo25D] = []
-	for node: Node in viewport_overlay.get_children():
-		if node is Gizmo25D:
-			var gizmo := node as Gizmo25D
-			var contains: bool = false
-			for selected: Node in selection:
-				if (
-					selected == gizmo.node_25d
-					and not view_mode_changed_this_frame
-				):
-					contains = true
-			if not contains:
-				gizmo.queue_free()
-			else:
-				gizmos.append(gizmo)
-
-	# Add new gizmos.
-	for selected: Node in selection:
-		if selected is Node25D:
-			_ensure_node25d_has_gizmo(selected as Node25D, gizmos)
-
-	# Update gizmo zoom.
-	for gizmo in gizmos:
-		gizmo.set_zoom(zoom)
+	_update_gizmos()
 
 
 func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Gizmo25D]) -> void:
@@ -147,6 +139,11 @@ func _gui_input(input_event: InputEvent) -> void:
 			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 				var gizmo := _get_first_gizmo_child_node()
 				if gizmo:
+					if enable_print_debug:
+						print(
+							"Wants to move gizmo along axis: ",
+							gizmo._dominant_axis
+						)
 					gizmo.wants_to_move = true
 					accept_event()
 				else:
@@ -154,12 +151,16 @@ func _gui_input(input_event: InputEvent) -> void:
 
 		elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
 			is_panning = false
+			if enable_print_debug:
+				print("Stopped panning viewport.")
 			accept_event()
 
 		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
 			var gizmo := _get_first_gizmo_child_node()
 			if gizmo:
 				gizmo.wants_to_move = false
+				if enable_print_debug:
+					print("No longer wants to move gizmo.")
 				accept_event()
 
 	elif input_event is InputEventMouseMotion:
@@ -168,6 +169,8 @@ func _gui_input(input_event: InputEvent) -> void:
 			viewport_center = (
 				pan_center + motion_event.position / _get_zoom_amount()
 			)
+			if enable_print_debug:
+				print("Panning viewport to center:", viewport_center)
 			accept_event()
 
 
@@ -180,6 +183,38 @@ func _recursive_change_view_mode(current_node: Node) -> void:
 
 	for child: Node in current_node.get_children():
 		_recursive_change_view_mode(child)
+
+
+func _update_gizmos() -> Array[Gizmo25D]:
+	var selection := EditorInterface.get_selection().get_selected_nodes()
+	var gizmos: Array[Gizmo25D] = []
+	for node: Node in viewport_overlay.get_children():
+		if node is Gizmo25D:
+			var gizmo := node as Gizmo25D
+			var contains: bool = false
+			for selected: Node in selection:
+				if (
+					selected == gizmo.node_25d
+					and not _view_mode_changed_this_frame
+				):
+					contains = true
+			if not contains:
+				# Delete unused gizmos.
+				if enable_print_debug:
+					print("Freed gizmo: %s" % gizmo.name)
+				gizmo.queue_free()
+			else:
+				gizmos.append(gizmo)
+
+	# Add new gizmos.
+	for selected: Node in selection:
+		if selected is Node25D:
+			_ensure_node25d_has_gizmo(selected as Node25D, gizmos)
+
+	# Update gizmo zoom.
+	for gizmo in gizmos:
+		gizmo.set_zoom(zoom)
+	return gizmos
 
 
 func _get_first_gizmo_child_node() -> Gizmo25D:

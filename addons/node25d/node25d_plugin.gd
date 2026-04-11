@@ -102,9 +102,12 @@ func _get_plugin_icon() -> Texture2D:
 func _handles(obj: Object) -> bool:
 	if obj is Node:
 		var node_obj := obj as Node
-		return node_obj is Node25D or (
-			Node25D.has_node25d_parent(node_obj)
-			if handles_node25d_children
-			else false
+		return (
+			node_obj is Node25D
+			or (
+				Node25D.has_node25d_parent(node_obj)
+				if handles_node25d_children
+				else false
+			)
 		)
 	return false
