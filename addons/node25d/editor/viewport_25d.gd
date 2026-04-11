@@ -2,6 +2,8 @@
 class_name Viewport25D
 extends Control
 
+signal view_mode_changed(new_view_mode: int)
+
 static var _debug_failed_find_attempts: int = 0
 
 var enable_print_debug: bool:
@@ -110,6 +112,7 @@ func _apply_view_mode(new_view_mode: int) -> void:
 
 	view_mode_index = new_view_mode
 	_view_mode_changed_this_frame = true
+	view_mode_changed.emit(view_mode_index)
 	_sync_view_mode_controls(view_mode_index)
 	if enable_print_debug:
 		print("View mode changed to index: ", view_mode_index)
