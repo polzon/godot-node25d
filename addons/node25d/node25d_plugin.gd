@@ -88,6 +88,11 @@ func _has_main_screen() -> bool:
 
 func _make_visible(visible: bool) -> void:
 	if main_panel_instance:
+		var viewport_25d := main_panel_instance.get_child(1) as Viewport25D
+		if viewport_25d:
+			viewport_25d.cancel_all_interactions()
+			viewport_25d.set_process(visible)
+			viewport_25d.set_process_input(visible)
 		if visible:
 			main_panel_instance.show()
 		else:

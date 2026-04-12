@@ -95,6 +95,10 @@ func _process(_delta: float) -> void:
 		push_error("Editor interface is not set on Viewport25D. Aborting.")
 		set_process(false)
 	else:
+		if not is_visible_in_tree():
+			cancel_all_interactions()
+			return
+		_release_stale_interactions()
 		_handle_viewport_input()
 
 
@@ -176,6 +180,9 @@ func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Gizmo25D]) -> void:
 
 # This only accepts input when the mouse is inside of the 2.5D viewport.
 func _input(input_event: InputEvent) -> void:
+	if not is_visible_in_tree():
+		return
+
 	if not (
 		input_event is InputEventPanGesture
 		or input_event is InputEventMouseButton
@@ -183,25 +190,13 @@ func _input(input_event: InputEvent) -> void:
 	):
 		return
 
-	var in_bounds := get_global_rect().has_point(get_global_mouse_position())
-
-	if input_event is InputEventMouseButton:
-		var mouse_event := input_event as InputEventMouseButton
-		_last_mouse_position_viewport = mouse_event.position
-		if mouse_event.is_pressed():
-			if not in_bounds:
-				return
-			_handle_mouse_button_pressed(mouse_event)
-		else:
-			# Always handle releases to reset drag state, even outside bounds.
-			_handle_mouse_button_released(mouse_event, in_bounds)
-		return
-
-	if not in_bounds:
+	if not get_global_rect().has_point(get_global_mouse_position()):
 		return
 
 	if input_event is InputEventPanGesture:
 		_handle_pan_gesture(input_event as InputEventPanGesture)
+	elif input_event is InputEventMouseButton:
+		_handle_mouse_button(input_event as InputEventMouseButton)
 	elif input_event is InputEventMouseMotion:
 		_handle_mouse_motion(input_event as InputEventMouseMotion)
 
@@ -215,6 +210,14 @@ func _handle_pan_gesture(pan_event: InputEventPanGesture) -> void:
 	if enable_print_debug:
 		print("Touchpad panning viewport to center:", viewport_center)
 	get_viewport().set_input_as_handled()
+
+
+func _handle_mouse_button(mouse_event: InputEventMouseButton) -> void:
+	_last_mouse_position_viewport = mouse_event.position
+	if mouse_event.is_pressed():
+		_handle_mouse_button_pressed(mouse_event)
+	else:
+		_handle_mouse_button_released(mouse_event)
 
 
 func _handle_mouse_button_pressed(
@@ -239,17 +242,15 @@ func _handle_mouse_button_pressed(
 
 func _handle_mouse_button_released(
 	mouse_event: InputEventMouseButton,
-	in_bounds: bool,
 ) -> void:
 	match mouse_event.button_index:
 		MOUSE_BUTTON_MIDDLE:
 			is_panning = false
 			if enable_print_debug:
 				print("Stopped panning viewport.")
-			if in_bounds:
-				get_viewport().set_input_as_handled()
+			get_viewport().set_input_as_handled()
 		MOUSE_BUTTON_LEFT:
-			_handle_left_click_released(in_bounds)
+			_handle_left_click_released()
 
 
 func _handle_wheel_scroll(mouse_event: InputEventMouseButton) -> void:
@@ -264,22 +265,22 @@ func _handle_wheel_scroll(mouse_event: InputEventMouseButton) -> void:
 
 func _handle_left_click_pressed() -> void:
 	var gizmo := _get_first_gizmo_child_node()
-	if gizmo:
+	if gizmo and gizmo.can_start_move():
 		if enable_print_debug:
 			print("Wants to move gizmo along axis: ", gizmo._dominant_axis)
 		gizmo.wants_to_move = true
 		get_viewport().set_input_as_handled()
 	elif enable_print_debug:
-		push_warning("Failed to find gizmo node.")
+		push_warning("Failed to find a movable gizmo axis.")
 
 
-func _handle_left_click_released(in_bounds: bool) -> void:
+func _handle_left_click_released() -> void:
 	var gizmo := _get_first_gizmo_child_node()
 	if gizmo:
 		gizmo.wants_to_move = false
 	if enable_print_debug:
 		print("No longer wants to move gizmo.")
-	if gizmo and in_bounds:
+	if gizmo:
 		get_viewport().set_input_as_handled()
 
 
@@ -331,6 +332,23 @@ func _apply_touchpad_pan_invert(pan_delta: Vector2) -> Vector2:
 	if _touchpad_pan_invert:
 		return -pan_delta
 	return pan_delta
+
+
+func cancel_all_interactions() -> void:
+	is_panning = false
+	for overlay_child: Node in viewport_overlay.get_children():
+		if overlay_child is Gizmo25D:
+			(overlay_child as Gizmo25D).cancel_move()
+
+
+func _release_stale_interactions() -> void:
+	if is_panning and not Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
+		is_panning = false
+
+	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		for overlay_child: Node in viewport_overlay.get_children():
+			if overlay_child is Gizmo25D:
+				(overlay_child as Gizmo25D).cancel_move()
 
 
 func get_last_mouse_position_viewport() -> Vector2:

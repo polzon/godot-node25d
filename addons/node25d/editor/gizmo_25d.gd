@@ -132,6 +132,17 @@ func _log_missing_axis(mouse_position: Vector2) -> void:
 		_missing_axis_logged_for_click = true
 
 
+func can_start_move() -> bool:
+	return _dominant_axis != -1
+
+
+func cancel_move() -> void:
+	wants_to_move = false
+	_missing_axis_logged_for_click = false
+	if _moving:
+		_finish_move()
+
+
 func _begin_move() -> void:
 	_moving = true
 	_start_mouse_position_viewport = _get_mouse_position_viewport()
