@@ -165,5 +165,6 @@ texture = SubResource("2")
 metadata/_edit_lock_ = true
 
 [connection signal="pressed" from="TopBar/Zoom/ZoomOut" to="Viewport25D" method="_on_ZoomOut_pressed"]
+[connection signal="pressed" from="TopBar/Zoom/NewZoomPercent" to="Viewport25D" method="_on_ZoomReset_pressed"]
 [connection signal="pressed" from="TopBar/Zoom/ZoomPercent/ZoomReset" to="Viewport25D" method="_on_ZoomReset_pressed"]
 [connection signal="pressed" from="TopBar/Zoom/ZoomIn" to="Viewport25D" method="_on_ZoomIn_pressed"]
