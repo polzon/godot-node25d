@@ -1,6 +1,10 @@
 [gd_scene format=3 uid="uid://cghhpfyixmwoh"]
 
 [ext_resource type="Script" uid="uid://ps437rdu8x6r" path="res://addons/node25d/editor/viewport_25d.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://dbt4dar8uohxs" path="res://addons/node25d/icons/godot/Viewport.svg" id="1_83sod"]
+[ext_resource type="Texture2D" uid="uid://c4oq2jgx7klhb" path="res://addons/node25d/icons/godot/CenterView.svg" id="2_ll6fw"]
+[ext_resource type="Texture2D" uid="uid://dn0vkbddi0a7o" path="res://addons/node25d/icons/godot/ZoomLess.svg" id="3_lqlde"]
+[ext_resource type="Texture2D" uid="uid://bjpfve58w2aax" path="res://addons/node25d/icons/godot/ZoomMore.svg" id="4_5am35"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_qimvl"]
 
@@ -23,14 +27,18 @@ layout_mode = 2
 size_flags_horizontal = 3
 metadata/_edit_lock_ = true
 
-[node name="EditorTools" type="HBoxContainer" parent="TopBar" unique_id=1423363739]
+[node name="MarginLeft" type="Control" parent="TopBar" unique_id=1867132973]
+editor_description = "Empty space margin to the left of the menu bar."
+custom_minimum_size = Vector2(5, 0)
 layout_mode = 2
 
-[node name="ViewModeMenu" type="MenuButton" parent="TopBar/EditorTools" unique_id=1121625336]
+[node name="ViewModeMenu" type="MenuButton" parent="TopBar" unique_id=1121625336]
 unique_name_in_owner = true
 layout_mode = 2
 button_group = SubResource("ButtonGroup_qimvl")
 text = "View Mode"
+icon = ExtResource("1_83sod")
+flat = false
 item_count = 8
 popup/item_0/text = "45 Degrees"
 popup/item_0/checkable = 2
@@ -57,11 +65,16 @@ popup/item_6/id = 6
 popup/item_7/text = "Oblique RPG"
 popup/item_7/checkable = 2
 popup/item_7/id = 7
-metadata/_edit_group_ = true
 
 [node name="Spacer" type="Control" parent="TopBar" unique_id=500785779]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="CenterView" type="Button" parent="TopBar" unique_id=937430797]
+layout_mode = 2
+icon = ExtResource("2_ll6fw")
+flat = true
+icon_alignment = 1
 
 [node name="Zoom" type="HBoxContainer" parent="TopBar" unique_id=1214157372]
 layout_mode = 2
@@ -71,10 +84,22 @@ metadata/_edit_group_ = true
 [node name="ZoomOut" type="Button" parent="TopBar/Zoom" unique_id=907332067]
 custom_minimum_size = Vector2(32, 2.08165e-12)
 layout_mode = 2
-text = "-"
+icon = ExtResource("3_lqlde")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="NewZoomPercent" type="Button" parent="TopBar/Zoom" unique_id=630913217]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "100%"
+flat = true
+icon_alignment = 1
+expand_icon = true
 
 [node name="ZoomPercent" type="Label" parent="TopBar/Zoom" unique_id=353048060]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(100, 2.08165e-12)
 layout_mode = 2
 text = "100%"
@@ -89,7 +114,15 @@ anchor_bottom = 1.0
 [node name="ZoomIn" type="Button" parent="TopBar/Zoom" unique_id=311062680]
 custom_minimum_size = Vector2(32, 2.08165e-12)
 layout_mode = 2
-text = "+"
+icon = ExtResource("4_5am35")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="MarginRight" type="Control" parent="TopBar" unique_id=1459484720]
+editor_description = "Empty space margin to the right of the menu bar."
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
 
 [node name="Viewport25D" type="Control" parent="." unique_id=1915625833]
 layout_mode = 2
