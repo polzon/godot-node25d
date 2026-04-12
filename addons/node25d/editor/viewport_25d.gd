@@ -2,6 +2,8 @@
 class_name Viewport25D
 extends Control
 
+# ! Currently breaks Viewport2D again when interacted with.
+
 signal view_mode_changed(new_view_mode: int)
 
 static var _debug_failed_find_attempts: int = 0
@@ -29,12 +31,6 @@ var _touchpad_pan_enabled: bool:
 	get():
 		return Node25DPlugin.get_or_set_editor_setting(
 			"viewport_25d", "input/touchpad_pan_enabled", false
-		)
-
-var _touchpad_wheel_pan_enabled: bool:
-	get():
-		return Node25DPlugin.get_or_set_editor_setting(
-			"viewport_25d", "input/touchpad_wheel_pan_enabled", false
 		)
 
 var _touchpad_wheel_pan_step: float:
@@ -187,98 +183,119 @@ func _input(input_event: InputEvent) -> void:
 	):
 		return
 
-	if not get_global_rect().has_point(get_global_mouse_position()):
-		return
+	var in_bounds := get_global_rect().has_point(get_global_mouse_position())
 
-	if input_event is InputEventPanGesture:
-		if not _touchpad_pan_enabled:
-			return
-
-		var pan_event := input_event as InputEventPanGesture
-		viewport_center += (
-			_apply_touchpad_pan_invert(pan_event.delta) / _get_zoom_amount()
-		)
-		if enable_print_debug:
-			print("Touchpad panning viewport to center:", viewport_center)
-		get_viewport().set_input_as_handled()
-
-	elif input_event is InputEventMouseButton:
+	if input_event is InputEventMouseButton:
 		var mouse_event := input_event as InputEventMouseButton
 		_last_mouse_position_viewport = mouse_event.position
 		if mouse_event.is_pressed():
-			if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
-				if _should_pan_from_wheel(mouse_event):
-					_pan_from_wheel(mouse_event)
-				else:
-					zoom_level += 1
+			if not in_bounds:
+				return
+			_handle_mouse_button_pressed(mouse_event)
+		else:
+			# Always handle releases to reset drag state, even outside bounds.
+			_handle_mouse_button_released(mouse_event, in_bounds)
+		return
+
+	if not in_bounds:
+		return
+
+	if input_event is InputEventPanGesture:
+		_handle_pan_gesture(input_event as InputEventPanGesture)
+	elif input_event is InputEventMouseMotion:
+		_handle_mouse_motion(input_event as InputEventMouseMotion)
+
+
+func _handle_pan_gesture(pan_event: InputEventPanGesture) -> void:
+	if not _touchpad_pan_enabled:
+		return
+	viewport_center += (
+		_apply_touchpad_pan_invert(pan_event.delta) / _get_zoom_amount()
+	)
+	if enable_print_debug:
+		print("Touchpad panning viewport to center:", viewport_center)
+	get_viewport().set_input_as_handled()
+
+
+func _handle_mouse_button_pressed(
+	mouse_event: InputEventMouseButton,
+) -> void:
+	match mouse_event.button_index:
+		MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN:
+			_handle_wheel_scroll(mouse_event)
+		MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT:
+			if _touchpad_pan_enabled:
+				_pan_from_wheel(mouse_event)
 				get_viewport().set_input_as_handled()
+		MOUSE_BUTTON_MIDDLE:
+			is_panning = true
+			pan_center = (
+				viewport_center - mouse_event.position / _get_zoom_amount()
+			)
+			get_viewport().set_input_as_handled()
+		MOUSE_BUTTON_LEFT:
+			_handle_left_click_pressed()
 
-			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-				if _should_pan_from_wheel(mouse_event):
-					_pan_from_wheel(mouse_event)
-				else:
-					zoom_level -= 1
-				get_viewport().set_input_as_handled()
 
-			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_LEFT:
-				if _touchpad_wheel_pan_enabled:
-					_pan_from_wheel(mouse_event)
-					get_viewport().set_input_as_handled()
-
-			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_RIGHT:
-				if _touchpad_wheel_pan_enabled:
-					_pan_from_wheel(mouse_event)
-				get_viewport().set_input_as_handled()
-
-			elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
-				is_panning = true
-				pan_center = (
-					viewport_center - mouse_event.position / _get_zoom_amount()
-				)
-				get_viewport().set_input_as_handled()
-
-			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
-				var gizmo := _get_first_gizmo_child_node()
-				if gizmo:
-					if enable_print_debug:
-						print(
-							"Wants to move gizmo along axis: ",
-							gizmo._dominant_axis
-						)
-					gizmo.wants_to_move = true
-					get_viewport().set_input_as_handled()
-				elif enable_print_debug:
-					push_warning("Failed to find gizmo node.")
-
-		elif mouse_event.button_index == MOUSE_BUTTON_MIDDLE:
+func _handle_mouse_button_released(
+	mouse_event: InputEventMouseButton,
+	in_bounds: bool,
+) -> void:
+	match mouse_event.button_index:
+		MOUSE_BUTTON_MIDDLE:
 			is_panning = false
 			if enable_print_debug:
 				print("Stopped panning viewport.")
-			get_viewport().set_input_as_handled()
-
-		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
-			var gizmo := _get_first_gizmo_child_node()
-			if gizmo:
-				gizmo.wants_to_move = false
-			if enable_print_debug:
-				print("No longer wants to move gizmo.")
-			if gizmo:
+			if in_bounds:
 				get_viewport().set_input_as_handled()
+		MOUSE_BUTTON_LEFT:
+			_handle_left_click_released(in_bounds)
 
-	elif input_event is InputEventMouseMotion:
-		var motion_event := input_event as InputEventMouseMotion
-		_last_mouse_position_viewport = motion_event.position
-		if is_panning:
-			viewport_center = (
-				pan_center + motion_event.position / _get_zoom_amount()
-			)
-			if enable_print_debug:
-				print("Panning viewport to center:", viewport_center)
-			get_viewport().set_input_as_handled()
+
+func _handle_wheel_scroll(mouse_event: InputEventMouseButton) -> void:
+	if _should_pan_from_wheel(mouse_event):
+		_pan_from_wheel(mouse_event)
+	elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
+		zoom_level += 1
+	else:
+		zoom_level -= 1
+	get_viewport().set_input_as_handled()
+
+
+func _handle_left_click_pressed() -> void:
+	var gizmo := _get_first_gizmo_child_node()
+	if gizmo:
+		if enable_print_debug:
+			print("Wants to move gizmo along axis: ", gizmo._dominant_axis)
+		gizmo.wants_to_move = true
+		get_viewport().set_input_as_handled()
+	elif enable_print_debug:
+		push_warning("Failed to find gizmo node.")
+
+
+func _handle_left_click_released(in_bounds: bool) -> void:
+	var gizmo := _get_first_gizmo_child_node()
+	if gizmo:
+		gizmo.wants_to_move = false
+	if enable_print_debug:
+		print("No longer wants to move gizmo.")
+	if gizmo and in_bounds:
+		get_viewport().set_input_as_handled()
+
+
+func _handle_mouse_motion(motion_event: InputEventMouseMotion) -> void:
+	_last_mouse_position_viewport = motion_event.position
+	if is_panning:
+		viewport_center = (
+			pan_center + motion_event.position / _get_zoom_amount()
+		)
+		if enable_print_debug:
+			print("Panning viewport to center:", viewport_center)
+		get_viewport().set_input_as_handled()
 
 
 func _should_pan_from_wheel(mouse_event: InputEventMouseButton) -> bool:
-	if not _touchpad_wheel_pan_enabled:
+	if not _touchpad_pan_enabled:
 		return false
 
 	# Keep Ctrl + wheel available for explicit zoom with a touchpad.
@@ -373,7 +390,7 @@ func _get_first_gizmo_child_node() -> Gizmo25D:
 func _get_zoom_amount() -> float:
 	const THIRTEENTH_ROOT_OF_2 = 1.05476607648
 	var zoom_amount := pow(THIRTEENTH_ROOT_OF_2, zoom_level)
-	zoom_label.text = str(round(zoom_amount * 1000) / 10) + "%"
+	zoom_label.text = str(roundf(zoom_amount * 1000) / 10) + "%"
 	return zoom_amount
 
 
