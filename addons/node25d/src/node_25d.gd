@@ -60,13 +60,16 @@ var _basis_z: Vector2
 
 # Cache the spatial stuff for internal use.
 var _spatial_position: Vector3
+## The Node3D child used for spatial math.
 var _spatial_node: Node3D
+## The Node2D child used for rendering.
+var _render_node: Node2D
 
 
 func _init() -> void:
 	set_view_mode(view_mode)
-	child_order_changed.connect(_update_spatial_node)
-	ready.connect(_update_spatial_node)
+	child_order_changed.connect(_update_cached_children)
+	ready.connect(_update_cached_children)
 
 
 func _process(_delta: float) -> void:
@@ -164,27 +167,30 @@ func set_view_mode(new_view_mode: ViewMode) -> void:
 
 
 func _get_configuration_warnings() -> PackedStringArray:
+	_update_cached_children()
 	var warnings: PackedStringArray = []
-	var child_count := get_child_count(false)
 
-	# Ensure required nodes are present and setup.
-	if child_count == 0:
+	if _spatial_node == null:
 		warnings.append("A Node25D must have a child Node3D to function.")
-	elif child_count == 1:
-		warnings.append("No second node found, so nothing will be rendered.")
 
-	# Ensure child nodes are correct types.
-	if child_count >= 1 and get_child(0) is not Node3D:
-		warnings.append("First child node must inherit from Node3D.")
-	if child_count >= 2 and get_child(1) is not Node2D:
-		warnings.append("Second child node must inherit from Node2D.")
+	if _render_node == null:
+		warnings.append("A Node25D must have a child Node2D to render.")
 
 	return warnings
 
 
-func _update_spatial_node() -> void:
-	if get_child_count() > 0:
-		_spatial_node = get_child(0) as Node3D
+func _update_cached_children() -> void:
+	_spatial_node = null
+	_render_node = null
+
+	for child: Node in get_children(false):
+		if _spatial_node == null and child is Node3D:
+			_spatial_node = child as Node3D
+		elif _render_node == null and child is Node2D:
+			_render_node = child as Node2D
+
+		if _spatial_node and _render_node:
+			break
 
 
 # Used by YSort25D
