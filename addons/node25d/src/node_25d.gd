@@ -86,7 +86,9 @@ func update_spatial_positioning() -> void:
 	global_position = spatial_to_flat(_spatial_position)
 
 
-## Convert spatial position to flat 2D position using the Node25D basis.
+## Converts a 3D spatial position to a flat 2D position. This is the core of
+## the Node25D math, and the basis vectors are determined by
+## the [ViewMode] setting.
 func spatial_to_flat(spatial_pos: Vector3) -> Vector2:
 	var flat_pos: Vector2 = spatial_pos.x * _basis_x
 	flat_pos += spatial_pos.y * _basis_y
