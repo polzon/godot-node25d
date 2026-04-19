@@ -56,8 +56,7 @@ var _dominant_axis: int = -1
 
 @onready var _lines: Array[Line2D] = [$X, $Y, $Z]
 @onready var _viewport_overlay: SubViewport = get_parent() as SubViewport
-@onready
-var _viewport_25d: Viewport25D = _viewport_overlay.get_parent() as Viewport25D
+@onready var _viewport_25d := _viewport_overlay.get_parent() as Viewport25D
 
 
 func _process(_delta: float) -> void:
@@ -111,9 +110,7 @@ func _is_setup_valid() -> bool:
 
 func _get_mouse_position_local() -> Vector2:
 	var mouse_position_viewport: Vector2 = _get_mouse_position_viewport()
-	var full_transform: Transform2D = (
-		_viewport_overlay.canvas_transform * global_transform
-	)
+	var full_transform := _viewport_overlay.canvas_transform * global_transform
 	return full_transform.affine_inverse() * mouse_position_viewport
 
 
@@ -148,13 +145,8 @@ func cancel_move() -> void:
 func _begin_move() -> void:
 	_moving = true
 	_start_mouse_position_viewport = _get_mouse_position_viewport()
-	_drag_axis_unit_vector_viewport = (
-		_viewport_overlay
-		. canvas_transform
-		. basis_xform(node_25d.get_basis()[_dominant_axis])
-	)
-	_start_spatial_origin = _spatial_node.transform.origin
-	_start_spatial_transform = _spatial_node.transform
+	_drag_axis_unit_vector_viewport = _get_drag_axis_viewport_vector()
+	_capture_move_start_state()
 	if debug_print_mouse_movement:
 		print("Started moving gizmo.")
 
@@ -163,9 +155,20 @@ func _finish_move() -> void:
 	_snap_spatial_position()
 	_register_transform_undo()
 	node_25d.notify_property_list_changed()
+	_refresh_gizmo_visuals()
 	_moving = false
 	if debug_print_mouse_movement:
 		print("Stopped moving gizmo.")
+
+
+func _get_drag_axis_viewport_vector() -> Vector2:
+	var axis_basis: Vector2 = node_25d.get_basis()[_dominant_axis]
+	return _viewport_overlay.canvas_transform.basis_xform(axis_basis)
+
+
+func _capture_move_start_state() -> void:
+	_start_spatial_origin = _spatial_node.transform.origin
+	_start_spatial_transform = _spatial_node.transform
 
 
 func _register_transform_undo() -> void:
@@ -189,14 +192,22 @@ func _register_transform_undo() -> void:
 	undo_redo.add_undo_method(node_25d, "update_spatial_positioning")
 	undo_redo.add_do_method(node_25d, "notify_property_list_changed")
 	undo_redo.add_undo_method(node_25d, "notify_property_list_changed")
-	undo_redo.add_do_method(self, "_refresh_gizmo_visual_state")
-	undo_redo.add_undo_method(self, "_refresh_gizmo_visual_state")
+	undo_redo.add_do_method(self, "_refresh_gizmo_visuals")
+	undo_redo.add_undo_method(self, "_refresh_gizmo_visuals")
 	undo_redo.commit_action()
 
 
-func _refresh_gizmo_visual_state() -> void:
+func _refresh_gizmo_visuals() -> void:
+	_sync_gizmo_position()
+	_request_wireframe_redraw()
+
+
+func _sync_gizmo_position() -> void:
 	if node_25d and is_instance_valid(node_25d):
 		global_position = node_25d.global_position
+
+
+func _request_wireframe_redraw() -> void:
 	if _mesh_wireframe_display:
 		_mesh_wireframe_display.request_redraw()
 
@@ -243,11 +254,10 @@ func move_using_mouse() -> void:
 			" Movement: ",
 			movement
 		)
-	if _mesh_wireframe_display:
-		_mesh_wireframe_display.request_redraw()
+	_request_wireframe_redraw()
 
 	# Move the gizmo appropriately.
-	global_position = node_25d.global_position
+	_sync_gizmo_position()
 
 
 # Setup after _ready due to the onready vars, called manually in Viewport25D.gd.
