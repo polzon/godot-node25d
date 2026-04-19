@@ -30,6 +30,7 @@ func _enter_tree() -> void:
 		"Editor interface is null in _enter_tree."
 	)
 	viewport_25d.editor_interface = get_editor_interface()
+	viewport_25d.undo_redo = get_undo_redo()
 	assert(
 		viewport_25d.editor_interface == get_editor_interface(),
 		"Failed to set editor interface on Viewport25D."

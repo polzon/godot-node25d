@@ -21,6 +21,7 @@ var viewport_center: Vector2
 var view_mode_index: int = 0
 
 var editor_interface: EditorInterface  # Set in node25d_plugin.gd
+var undo_redo: EditorUndoRedoManager
 var moving: bool = false
 var zoom: float = 1.0
 var _last_mouse_position_viewport: Vector2 = Vector2.ZERO
@@ -175,6 +176,7 @@ func _ensure_node25d_has_gizmo(node: Node25D, gizmos: Array[Gizmo25D]) -> void:
 
 	var gizmo := gizmo_25d_scene.instantiate() as Gizmo25D
 	viewport_overlay.add_child(gizmo)
+	gizmo.undo_redo = undo_redo
 	gizmo.setup(node)
 
 
