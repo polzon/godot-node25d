@@ -38,6 +38,7 @@ var wants_to_move: bool = false
 
 # Set when the node is created.
 var node_25d: Node25D
+var undo_redo: EditorUndoRedoManager
 
 var _spatial_node: Node3D
 var _mesh_wireframe_display: MeshWireframeDisplay
@@ -47,6 +48,7 @@ var _moving: bool = false
 var _start_mouse_position_viewport := Vector2.ZERO
 var _drag_axis_unit_vector_viewport := Vector2.ZERO
 var _start_spatial_origin := Vector3.ZERO
+var _start_spatial_transform: Transform3D = Transform3D.IDENTITY
 var _missing_axis_logged_for_click: bool = false
 
 # Stores state of closest or currently used axis.
@@ -152,16 +154,51 @@ func _begin_move() -> void:
 		. basis_xform(node_25d.get_basis()[_dominant_axis])
 	)
 	_start_spatial_origin = _spatial_node.transform.origin
+	_start_spatial_transform = _spatial_node.transform
 	if debug_print_mouse_movement:
 		print("Started moving gizmo.")
 
 
 func _finish_move() -> void:
 	_snap_spatial_position()
+	_register_transform_undo()
 	node_25d.notify_property_list_changed()
 	_moving = false
 	if debug_print_mouse_movement:
 		print("Stopped moving gizmo.")
+
+
+func _register_transform_undo() -> void:
+	if (
+		not undo_redo
+		or not _spatial_node
+		or not is_instance_valid(_spatial_node)
+	):
+		return
+
+	var end_transform: Transform3D = _spatial_node.transform
+	if _start_spatial_transform == end_transform:
+		return
+
+	undo_redo.create_action("Move Node25D Gizmo")
+	undo_redo.add_do_property(_spatial_node, "transform", end_transform)
+	undo_redo.add_undo_property(
+		_spatial_node, "transform", _start_spatial_transform
+	)
+	undo_redo.add_do_method(node_25d, "update_spatial_positioning")
+	undo_redo.add_undo_method(node_25d, "update_spatial_positioning")
+	undo_redo.add_do_method(node_25d, "notify_property_list_changed")
+	undo_redo.add_undo_method(node_25d, "notify_property_list_changed")
+	undo_redo.add_do_method(self, "_refresh_gizmo_visual_state")
+	undo_redo.add_undo_method(self, "_refresh_gizmo_visual_state")
+	undo_redo.commit_action()
+
+
+func _refresh_gizmo_visual_state() -> void:
+	if node_25d and is_instance_valid(node_25d):
+		global_position = node_25d.global_position
+	if _mesh_wireframe_display:
+		_mesh_wireframe_display.request_redraw()
 
 
 func determine_dominant_axis(mouse_position: Vector2) -> void:
